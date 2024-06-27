@@ -1,0 +1,27 @@
+<RCC>
+    <qresource prefix="/images">
+        <file>images/logo.png</file>
+        <file>images/background.jpg</file>
+        <file>images/btn_search.png</file>
+        <file>images/btn_close.png</file>
+        <file>images/btn_mail.png</file>
+        <file>images/btn_maximize.png</file>
+        <file>images/btn_minimize.png</file>
+        <file>images/btn_setting.png</file>
+        <file>images/btn_skin.png</file>
+        <file>images/btn_play.png</file>
+        <file>images/volume_close.png</file>
+        <file>images/btn_lrc.png</file>
+        <file>images/btn_next.png</file>
+        <file>images/btn_pre.png</file>
+        <file>images/mode_random.png</file>
+        <file>images/mode_seq.png</file>
+        <file>images/mode_single.png</file>
+        <file>images/volume.png</file>
+        <file>images/btn_dropdw.png</file>
+        <file>images/btn_like.png</file>
+    </qresource>
+    <qresource prefix="/qss">
+        <file>qss/style.qss</file>
+    </qresource>
+</RCC>
