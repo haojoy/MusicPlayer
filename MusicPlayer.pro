@@ -10,10 +10,12 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
-    mainwidget.cpp
+    mainwidget.cpp \
+    switchanimation.cpp
 
 HEADERS += \
-    mainwidget.h
+    mainwidget.h \
+    switchanimation.h
 
 FORMS += \
     mainwidget.ui

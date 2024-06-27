@@ -37,9 +37,21 @@ QSlider::sub-page:horizontal {
     border: none;
 }
 
+
+/*QLineEdit#edit_search
+{
+        background: transparent;
+        border-radius: 10px;
+        font-size: 14;
+        font-family: "微软雅黑";
+        color: rgba(211, 211, 211, 128);
+}*/
+
 QTextEdit {
-	background-color:rgb(42, 42, 42);
-	color: rgb(0, 255, 0);
+        border: 2px solid rgba(211, 211, 211, 128);
+        /*background-color:rgb(42, 42, 42);
+        color: rgb(0, 255, 0);*/
+        border-radius: 5px;
 }
 QPushButton{
     background: transparent;
@@ -49,13 +61,20 @@ QPushButton{
     color: #000000; /* 设置字体颜色 */
 }
 
+QPushButton#btn_albumpic:hover
+{
+    border-image:url(:/images/button/btn_up.png);
+}
+
 QLineEdit {
-	border-width: 1px; border-radius: 4px;
-        border-color: rgb(58, 58, 58);  /*transparent*/
+        background: transparent;
+        border-width: 1px;
+        border-radius: 5px;
+        border-color: rgb(42, 42, 42);  /*transparent*/
 	border-style: inset;
-	padding: 0 8px;
-	selection-background-color: rgb(187, 187, 187);
-	selection-color: rgb(60, 63, 65);
+        padding: 0 8px;
+        selection-background-color: rgb(187, 187, 187);
+        selection-color: rgb(60, 63, 65);
 }
 
 QLabel {

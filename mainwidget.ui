@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="images.qrc">
-    <normaloff>:/images/images/logo.png</normaloff>:/images/images/logo.png</iconset>
+    <normaloff>:/images/logo.png</normaloff>:/images/logo.png</iconset>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2">
    <item>
@@ -110,7 +110,7 @@
          </property>
          <property name="icon">
           <iconset resource="images.qrc">
-           <normaloff>:/images/images/logo.png</normaloff>:/images/images/logo.png</iconset>
+           <normaloff>:/images/logo.png</normaloff>:/images/logo.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -167,7 +167,7 @@
          </property>
          <property name="icon">
           <iconset resource="images.qrc">
-           <normaloff>:/images/images/btn_search.png</normaloff>:/images/images/btn_search.png</iconset>
+           <normaloff>:/images/button/btn_search.png</normaloff>:/images/button/btn_search.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -220,7 +220,7 @@
          </property>
          <property name="icon">
           <iconset resource="images.qrc">
-           <normaloff>:/images/images/btn_minimize.png</normaloff>:/images/images/btn_minimize.png</iconset>
+           <normaloff>:/images/button/btn_minimize.png</normaloff>:/images/button/btn_minimize.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -273,7 +273,7 @@
          </property>
          <property name="icon">
           <iconset resource="images.qrc">
-           <normaloff>:/images/images/btn_maximize.png</normaloff>:/images/images/btn_maximize.png</iconset>
+           <normaloff>:/images/button/btn_maximize.png</normaloff>:/images/button/btn_maximize.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -323,7 +323,7 @@
          </property>
          <property name="icon">
           <iconset resource="images.qrc">
-           <normaloff>:/images/images/btn_close.png</normaloff>:/images/images/btn_close.png</iconset>
+           <normaloff>:/images/button/btn_close.png</normaloff>:/images/button/btn_close.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -355,7 +355,7 @@
          </property>
          <property name="icon">
           <iconset resource="images.qrc">
-           <normaloff>:/images/images/btn_setting.png</normaloff>:/images/images/btn_setting.png</iconset>
+           <normaloff>:/images/button/btn_setting.png</normaloff>:/images/button/btn_setting.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -390,7 +390,7 @@
          </property>
          <property name="icon">
           <iconset resource="images.qrc">
-           <normaloff>:/images/images/btn_skin.png</normaloff>:/images/images/btn_skin.png</iconset>
+           <normaloff>:/images/button/btn_skin.png</normaloff>:/images/button/btn_skin.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -425,7 +425,7 @@
          </property>
          <property name="icon">
           <iconset resource="images.qrc">
-           <normaloff>:/images/images/btn_mail.png</normaloff>:/images/images/btn_mail.png</iconset>
+           <normaloff>:/images/button/btn_mail.png</normaloff>:/images/button/btn_mail.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -725,7 +725,7 @@
                <x>11</x>
                <y>11</y>
                <width>961</width>
-               <height>651</height>
+               <height>591</height>
               </rect>
              </property>
              <property name="sizePolicy">
@@ -891,7 +891,7 @@
           <x>0</x>
           <y>710</y>
           <width>1261</width>
-          <height>70</height>
+          <height>81</height>
          </rect>
         </property>
         <property name="sizePolicy">
@@ -900,88 +900,6 @@
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <widget class="QWidget" name="widget" native="true">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>20</y>
-           <width>391</width>
-           <height>54</height>
-          </rect>
-         </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
-          <item>
-           <widget class="QLabel" name="label_albumpic">
-            <property name="minimumSize">
-             <size>
-              <width>55</width>
-              <height>55</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>55</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>TextLabel</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btn_like">
-            <property name="minimumSize">
-             <size>
-              <width>33</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>35</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="toolTip">
-             <string>喜欢</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset resource="images.qrc">
-              <normaloff>:/images/images/btn_like.png</normaloff>:/images/images/btn_like.png</iconset>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>30</width>
-              <height>30</height>
-             </size>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="label_songname1">
-            <property name="minimumSize">
-             <size>
-              <width>240</width>
-              <height>32</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>240</width>
-              <height>32</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>歌名/歌手</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
         <widget class="QWidget" name="widget_songswitch" native="true">
          <property name="geometry">
           <rect>
@@ -1026,7 +944,7 @@
             </property>
             <property name="icon">
              <iconset resource="images.qrc">
-              <normaloff>:/images/images/btn_pre.png</normaloff>:/images/images/btn_pre.png</iconset>
+              <normaloff>:/images/button/btn_pre.png</normaloff>:/images/button/btn_pre.png</iconset>
             </property>
            </widget>
           </item>
@@ -1064,7 +982,7 @@
             </property>
             <property name="icon">
              <iconset resource="images.qrc">
-              <normaloff>:/images/images/btn_play.png</normaloff>:/images/images/btn_play.png</iconset>
+              <normaloff>:/images/button/btn_play.png</normaloff>:/images/button/btn_play.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -1108,7 +1026,7 @@
             </property>
             <property name="icon">
              <iconset resource="images.qrc">
-              <normaloff>:/images/images/btn_next.png</normaloff>:/images/images/btn_next.png</iconset>
+              <normaloff>:/images/button/btn_next.png</normaloff>:/images/button/btn_next.png</iconset>
             </property>
            </widget>
           </item>
@@ -1158,7 +1076,7 @@
             </property>
             <property name="icon">
              <iconset resource="images.qrc">
-              <normaloff>:/images/images/btn_lrc.png</normaloff>:/images/images/btn_lrc.png</iconset>
+              <normaloff>:/images/button/btn_lrc.png</normaloff>:/images/button/btn_lrc.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -1202,7 +1120,7 @@
             </property>
             <property name="icon">
              <iconset resource="images.qrc">
-              <normaloff>:/images/images/volume.png</normaloff>:/images/images/volume.png</iconset>
+              <normaloff>:/images/button/volume.png</normaloff>:/images/button/volume.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -1252,7 +1170,7 @@
             </property>
             <property name="icon">
              <iconset resource="images.qrc">
-              <normaloff>:/images/images/mode_seq.png</normaloff>:/images/images/mode_seq.png</iconset>
+              <normaloff>:/images/button/mode_seq.png</normaloff>:/images/button/mode_seq.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -1263,6 +1181,75 @@
            </widget>
           </item>
          </layout>
+        </widget>
+        <widget class="QWidget" name="widget" native="true">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>391</width>
+           <height>80</height>
+          </rect>
+         </property>
+         <widget class="QPushButton" name="btn_albumpic">
+          <property name="geometry">
+           <rect>
+            <x>20</x>
+            <y>10</y>
+            <width>60</width>
+            <height>60</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="images.qrc">
+            <normaloff>:/images/AlbumImg/shenshi.jpg</normaloff>:/images/AlbumImg/shenshi.jpg</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>60</width>
+            <height>60</height>
+           </size>
+          </property>
+          <property name="autoDefault">
+           <bool>false</bool>
+          </property>
+          <property name="flat">
+           <bool>false</bool>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="btn_like">
+          <property name="geometry">
+           <rect>
+            <x>190</x>
+            <y>20</y>
+            <width>30</width>
+            <height>30</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="images.qrc">
+            <normaloff>:/images/button/btn_like.png</normaloff>:/images/button/btn_like.png</iconset>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_songinfo">
+          <property name="geometry">
+           <rect>
+            <x>90</x>
+            <y>20</y>
+            <width>91</width>
+            <height>41</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>演员/薛之谦</string>
+          </property>
+         </widget>
         </widget>
        </widget>
        <widget class="QSlider" name="hslider_header">
@@ -1400,7 +1387,7 @@
            </property>
            <property name="icon">
             <iconset resource="images.qrc">
-             <normaloff>:/images/images/btn_dropdw.png</normaloff>:/images/images/btn_dropdw.png</iconset>
+             <normaloff>:/images/button/btn_down.png</normaloff>:/images/button/btn_down.png</iconset>
            </property>
            <property name="iconSize">
             <size>
@@ -1423,7 +1410,7 @@
            </property>
            <property name="icon">
             <iconset resource="images.qrc">
-             <normaloff>:/images/images/btn_close.png</normaloff>:/images/images/btn_close.png</iconset>
+             <normaloff>:/images/button/btn_close.png</normaloff>:/images/button/btn_close.png</iconset>
            </property>
            <property name="iconSize">
             <size>
