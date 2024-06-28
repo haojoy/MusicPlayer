@@ -55,16 +55,30 @@ QTextEdit {
 }
 QPushButton{
     background: transparent;
-    font-family: Arial, sans-serif; /* 设置字体 */
-    font-size: 16px; /* 设置字号 */
-    font-weight: bold; /* 设置字体粗细 */
     color: #000000; /* 设置字体颜色 */
 }
+/*QPushButton{
+    background: transparent;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    font-weight: bold;
+    color: #000000;
+}*/
+QPushButton#btn_close:hover {
+    background-color:red;
+}
+QPushButton#btn_close2:hover {
+    background-color:red;
+}
 
-QPushButton#btn_albumpic:hover
+QPushButton#btn_albumpic
+{
+    border-image:url(:/images/AlbumImg/shenshi.jpg);
+}
+/*QPushButton#btn_albumpic:hover
 {
     border-image:url(:/images/button/btn_up.png);
-}
+}*/
 
 QLineEdit {
         background: transparent;

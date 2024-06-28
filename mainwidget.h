@@ -31,6 +31,8 @@ private:
     // 连接信号和槽
     void init_HandleSignalsAndSlots();
 
+    // 显示主界面
+    void showHomePage();
     // 显示歌词页面
     void showLyricsPage();
 
@@ -46,11 +48,23 @@ public:
 private slots:
     void on_btn_close_clicked();
 
-    void on_btn_close_2_clicked();
+    void on_btn_close2_clicked();
 
     void on_btn_albumpic_clicked();
 
     void on_btn_down_clicked();
+
+    void on_btn_favorite_clicked();
+
+    void on_btn_recently_clicked();
+
+    void on_btn_songList_clicked();
+
+    void on_btn_localsong_clicked();
+
+    void on_btn_minsize_clicked();
+
+    void on_btn_maxsize_clicked();
 
 private:
     Ui::MainWidget *ui;

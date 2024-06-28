@@ -24,7 +24,7 @@ public:
      */
     void slideAnimation(QWidget *parent, QWidget * slideWidget, int direction = AnimDirection::Up);
 protected:
-    int animTime = 300;
+    int animTime = 200;
 private:
     // 界面平移切换动画
     QLabel *m_leftLabel = nullptr;
