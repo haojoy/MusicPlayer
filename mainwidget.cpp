@@ -27,6 +27,9 @@ void MainWidget::init_HandleUI(){
     ui->tableWidget_search->horizontalHeader()->setStyleSheet("background-color:transparent");
     ui->tableWidget_search->verticalHeader()->setStyleSheet("background-color:transparent");
 
+    QString lineeditstyle = "QLineEdit {border: 1px solid lightgray; border-radius: 10px;padding-left: 10px;background-color: rgba(142,128,119,127)}";
+    ui->lineEdit_songlistname->setStyleSheet(lineeditstyle);
+    ui->edit_search->setStyleSheet(lineeditstyle);
 
 }
 
@@ -34,12 +37,20 @@ void MainWidget::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
 
-    // // 绘制背景图像
-    // QPixmap pixmap(":/images/background.jpg");
-    // painter.drawPixmap(rect(), pixmap);
+    // 确定绘制区域，排除边框
+    int borderThickness = 20;
+    QRect rectajust = rect();
+    if (!isMaximized()) {
+        rectajust = rectajust.adjusted(borderThickness, borderThickness, -borderThickness, -borderThickness);
+    }
+    // qDebug() << "rect:" <<rect().height() << rect().width();
+    // qDebug() << "---rect:" <<rectajust.height() << rectajust.width();
+    // 绘制背景图像
+    QPixmap pixmap(":/images/background.jpg");
+    painter.drawPixmap(rectajust, pixmap);
 
-    // // 设置背景颜色透明度
-    // painter.fillRect(rect(), QColor(97, 76, 64, 127)); // 白色，透明度为 100
+    // 设置背景颜色透明度
+    painter.fillRect(rectajust, QColor(97, 76, 64, 127)); // 白色，透明度为 100
 
     QWidget::paintEvent(event);
 }
@@ -173,10 +184,10 @@ void MainWidget::on_btn_maxsize_clicked()
 {
     if (this->isMaximized()) {
         this->showNormal();
-        ui->btn_maxsize->setIcon(QIcon(QPixmap(":/images/button/btn_restore.png")));
+        ui->btn_maxsize->setIcon(QIcon(QPixmap(":/images/button/btn_maximize.png")));
     } else {
         this->showMaximized();
-        ui->btn_maxsize->setIcon(QIcon(QPixmap(":/images/button/btn_maximize.png")));
+        ui->btn_maxsize->setIcon(QIcon(QPixmap(":/images/button/btn_restore.png")));
     }
 }
 

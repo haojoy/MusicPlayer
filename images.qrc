@@ -24,6 +24,7 @@
         <file>images/button/btn_up.png</file>
         <file>images/AlbumImg/shenshi.jpg</file>
         <file>images/button/btn_restore.png</file>
+        <file>images/button/btn_like2.png</file>
     </qresource>
     <qresource prefix="/qss">
         <file>qss/style.qss</file>

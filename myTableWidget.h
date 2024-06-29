@@ -12,7 +12,12 @@ public:
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;
+    // void wheelEvent(QWheelEvent *event) override;
+private:
+    void handleHoverEvent(const QPoint &pos);
 
+private:
+    int currentHoveredRow = -1;
 };
 
 

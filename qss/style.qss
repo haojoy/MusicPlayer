@@ -1,8 +1,7 @@
-/*QWidget {
-    background-color: #f0f0f0;
-    color: #333;
+/*QWidget{
+    background-color:rgba(97, 76, 64, 127);
+    background-image: url(:/images/background.jpg) no-repeat;
 }*/
-
 QSlider::groove:horizontal {
     border: 1px solid #bbb;
     background: #ddd;
@@ -34,7 +33,11 @@ QSlider::sub-page:horizontal {
     border: none;
 }
 
-
+/*QLineEdit {
+    border: 1px solid white;
+    border-radius: 10px;
+    padding: 5px;
+}*/
 /*QLineEdit#edit_search
 {
         background: transparent;
@@ -43,7 +46,13 @@ QSlider::sub-page:horizontal {
         font-family: "微软雅黑";
         color: rgba(211, 211, 211, 128);
 }*/
+QLineEdit[placeholderText] {
+    color: white; /* 设置 placeholderText 的颜色 */
+}
 
+QLabel {
+    color : white;
+}
 QTextEdit {
         border: 2px solid rgba(211, 211, 211, 128);
         /*background-color:rgb(42, 42, 42);
@@ -52,7 +61,12 @@ QTextEdit {
 }
 QPushButton{
     background: transparent;
-    color: #000000; /* 设置字体颜色 */
+    color: #FFFFFF; /* 设置字体颜色 */
+    border-radius: 8px;
+    font-weight: bold;
+}
+QPushButton::hover{
+    background-color: rgba(142,128,119,127)
 }
 
 QPushButton#btn_close:hover {
@@ -95,10 +109,10 @@ QListWidget::item:selected {
     color: black;
 }
 
-QWidget#centralWidget{
+/*QWidget#centralWidget{
     background-color:rgba(97, 76, 64, 127);
     background-image: url(:/images/background.jpg);
-}
+}*/
 
 QTableWidget{
     background: transparent;
@@ -108,15 +122,17 @@ QTableWidget{
 QHeaderView::section {
     background-color: transparent;
     border: none;
+    color:#f8f7f7;
+    font-size: 20px;
+    font-weight: bold;
 }
 QTableCornerButton::section {
     background-color: transparent;
 }
-/*
 QTableWidget::item {
-    background: transparent;
-    border: none;
+    color: #ece7e7;
 }
+/*
 QTableView::item:alternate {
     background-color: #e0e0e0;
 }*/
