@@ -7,7 +7,12 @@
 #include <QPainter>
 #include <QDebug>
 #include <QTimer>
-
+#include <QMessageBox>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
+#include <QMediaPlayer>
+#include <QMediaPlaylist>
+#include "music.h"
 #include "switchanimation.h"
 
 QT_BEGIN_NAMESPACE
@@ -15,6 +20,7 @@ namespace Ui {
 class MainWidget;
 }
 QT_END_NAMESPACE
+
 
 class MainWidget : public SwitchAnimation
 {
@@ -24,7 +30,7 @@ private:
     QPoint dragStartPosition;
 
 private:
-    //void paintEvent(QPaintEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
     void loadStyleSheet(const QString &styleSheetFile);
     // 界面初始化处理
     void init_HandleUI();
@@ -35,6 +41,14 @@ private:
     void showHomePage();
     // 显示歌词页面
     void showLyricsPage();
+
+    // 搜索音乐
+    void musicSearch(const QString &keystring);
+    void setSearchResultTable(SongList songs);
+
+
+    QString msecondToString(int mseconds);
+
 
 protected:
     //实现窗口可拖动
@@ -66,7 +80,22 @@ private slots:
 
     void on_btn_maxsize_clicked();
 
+    // 搜索歌曲
+    void on_btn_search_clicked();
+
+    void handleNetworkResponseData(QNetworkReply *reply);
+
+    void on_btn_setskin_clicked();
+
 private:
     Ui::MainWidget *ui;
+    QNetworkAccessManager *networkManager;
+
+
+    QMediaPlayer *player;            // 播放器
+    QMediaPlaylist *playlist;        // 播放列表
+    SongList songSearchResult;
+    PlayListList PlayListSearchResult;
+
 };
 #endif // MAINWIDGET_H

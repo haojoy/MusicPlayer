@@ -1,6 +1,6 @@
 QT       += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets network multimedia sql
 
 CONFIG += c++17
 
@@ -23,10 +23,13 @@ QMAKE_TARGET_DESCRIPTION = QT MusicPlayer
 SOURCES += \
     main.cpp \
     mainwidget.cpp \
+    myTableWidget.cpp \
     switchanimation.cpp
 
 HEADERS += \
     mainwidget.h \
+    music.h \
+    myTableWidget.h \
     switchanimation.h
 
 FORMS += \

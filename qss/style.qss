@@ -1,3 +1,8 @@
+/*QWidget {
+    background-color: #f0f0f0;
+    color: #333;
+}*/
+
 QSlider::groove:horizontal {
     border: 1px solid #bbb;
     background: #ddd;
@@ -21,14 +26,6 @@ QSlider::add-page:horizontal {
 QSlider::sub-page:horizontal {
     background: #00BFFF;
 }
-
-/*QWidget#widget_top {
-    background-color: #f0f0f0;
-    border: 10px;
-    padding: 10px;
-    margin: 5px;
-    border-radius: 5px;
-}*/
 
 #line_v1, #line_v2 {
     background-color: #d7d7d7;
@@ -57,13 +54,7 @@ QPushButton{
     background: transparent;
     color: #000000; /* 设置字体颜色 */
 }
-/*QPushButton{
-    background: transparent;
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    font-weight: bold;
-    color: #000000;
-}*/
+
 QPushButton#btn_close:hover {
     background-color:red;
 }
@@ -75,10 +66,6 @@ QPushButton#btn_albumpic
 {
     border-image:url(:/images/AlbumImg/shenshi.jpg);
 }
-/*QPushButton#btn_albumpic:hover
-{
-    border-image:url(:/images/button/btn_up.png);
-}*/
 
 QLineEdit {
         background: transparent;
@@ -108,8 +95,51 @@ QListWidget::item:selected {
     color: black;
 }
 
+QWidget#centralWidget{
+    background-color:rgba(97, 76, 64, 127);
+    background-image: url(:/images/background.jpg);
+}
+
+QTableWidget{
+    background: transparent;
+    border: none;
+/*    alternate-background-color: #f0f0f0;*/
+}
+QHeaderView::section {
+    background-color: transparent;
+    border: none;
+}
+QTableCornerButton::section {
+    background-color: transparent;
+}
+/*
+QTableWidget::item {
+    background: transparent;
+    border: none;
+}
+QTableView::item:alternate {
+    background-color: #e0e0e0;
+}*/
+
+/* 设置 QTableWidget 的悬停行颜色 */
+
+QTableWidget::item:hover {
+
+    background-color: rgba(255, 255, 255, 127);
+}
+
+/* 如果需要设置选中行的颜色，也可以配置 */
+QTableWidget::item:selected {
+    background-color: rgba(93, 76, 66, 127);
+}
+
+
+/*#widget_bottom{
+    background: transparent;
+    border: none;
+}*/
 QTabWidget::pane {
-    border-top: 1px solid #C2C2C2;
+    border: 0px;
     background: transparent;
 }
 
