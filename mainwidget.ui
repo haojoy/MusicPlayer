@@ -784,6 +784,9 @@
                     <property name="focusPolicy">
                      <enum>Qt::TabFocus</enum>
                     </property>
+                    <property name="contextMenuPolicy">
+                     <enum>Qt::CustomContextMenu</enum>
+                    </property>
                     <property name="verticalScrollBarPolicy">
                      <enum>Qt::ScrollBarAlwaysOff</enum>
                     </property>
@@ -1141,7 +1144,7 @@
      <property name="minimumSize">
       <size>
        <width>1289</width>
-       <height>100</height>
+       <height>104</height>
       </size>
      </property>
      <property name="maximumSize">
@@ -1154,21 +1157,24 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QSlider" name="hslider_header">
+         <widget class="MySlider" name="slider_progress">
           <property name="enabled">
            <bool>true</bool>
           </property>
           <property name="minimumSize">
            <size>
             <width>0</width>
-            <height>10</height>
+            <height>14</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>16777215</width>
-            <height>10</height>
+            <height>16777215</height>
            </size>
+          </property>
+          <property name="tracking">
+           <bool>false</bool>
           </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -1226,7 +1232,7 @@
              <string notr="true">color:white</string>
             </property>
             <property name="text">
-             <string>演员/薛之谦</string>
+             <string>Unknown</string>
             </property>
            </widget>
           </item>
@@ -1554,6 +1560,11 @@
    <class>MyTableWidget</class>
    <extends>QTableWidget</extends>
    <header>mytablewidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>MySlider</class>
+   <extends>QSlider</extends>
+   <header>myslider.h</header>
   </customwidget>
  </customwidgets>
  <resources>

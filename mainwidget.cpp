@@ -1,20 +1,36 @@
+#include <QScopedPointer>
 #include "mainwidget.h"
 #include "ui_mainwidget.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : SwitchAnimation(parent)
-    , ui(new Ui::MainWidget)
+    , ui(new Ui::MainWidget),
+    settings(QApplication::applicationDirPath() + "/musics.ini", QSettings::Format::IniFormat),
+    musicFileDir(QApplication::applicationDirPath() + "/musics"),
+    downloadedMusicFileDir(QApplication::applicationDirPath() + "/downloaded"),
+    player(new QMediaPlayer(this))
 {
     ui->setupUi(this);
 
-    networkManager = new QNetworkAccessManager(this);
+    // tablewidget 歌曲右键菜单
+    contextMenu = new QMenu(this);
+    playNowAction = new QAction("立即播放", this);
+    playNextAction = new QAction("下一首播放", this);
+    addToPlayListAction = new QAction("添加到播放列表", this);
+    favoriteAction = new QAction("我的喜欢", this);
+    playListMenu = new QMenu("添加到歌单", this);
+    contextMenu->addAction(playNowAction);
+    contextMenu->addAction(playNextAction);
+    contextMenu->addAction(addToPlayListAction);
+    contextMenu->addAction(favoriteAction);
+    contextMenu->addMenu(playListMenu);
+
+    musicFileDir.mkpath(musicFileDir.absolutePath());
+
     // UI相关初始化
     init_HandleUI();
-
     // 连接信号和槽
     init_HandleSignalsAndSlots();
-
-
 }
 
 // 界面初始化处理
@@ -22,7 +38,7 @@ void MainWidget::init_HandleUI(){
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowSystemMenuHint | Qt::WindowMinimizeButtonHint | Qt::WindowMaximizeButtonHint);
     // 加载样式表
     loadStyleSheet(":/qss/qss/style.qss");
-    //ui->centralWidget->setStyleSheet("background-image: url(:/images/background.jpg); background-color:rgba(97, 76, 64, 127);");
+
     // qss style QHeaderView::section
     ui->tableWidget_search->horizontalHeader()->setStyleSheet("background-color:transparent");
     ui->tableWidget_search->verticalHeader()->setStyleSheet("background-color:transparent");
@@ -30,7 +46,6 @@ void MainWidget::init_HandleUI(){
     QString lineeditstyle = "QLineEdit {border: 1px solid lightgray; border-radius: 10px;padding-left: 10px;background-color: rgba(142,128,119,127)}";
     ui->lineEdit_songlistname->setStyleSheet(lineeditstyle);
     ui->edit_search->setStyleSheet(lineeditstyle);
-
 }
 
 void MainWidget::paintEvent(QPaintEvent *event)
@@ -89,12 +104,43 @@ void MainWidget::showHomePage()
 // 连接信号和槽
 void MainWidget::init_HandleSignalsAndSlots(){
 
-    // 回车搜索
+    // 回车搜索 （也可转到槽）
     connect(ui->edit_search, &QLineEdit::returnPressed, this, [=] {
         ui->btn_search->click();
     });
-    // 搜索请求响应
-    connect(networkManager, &QNetworkAccessManager::finished, this, &MainWidget::handleNetworkResponseData);
+
+    connect(playNowAction, &QAction::triggered, this, &MainWidget::onPlayNowTriggered);
+    connect(playNextAction, &QAction::triggered, this, &MainWidget::onPlayNextTriggered);
+    connect(addToPlayListAction, &QAction::triggered, this, &MainWidget::onAddToPlayListTriggered);
+    connect(favoriteAction, &QAction::triggered, this, &MainWidget::onFavoriteTriggered);
+
+    connect(player, &QMediaPlayer::positionChanged, this, [=](qint64 position){
+        ui->slider_progress->setValue(position / 1000);
+       // ui->slider_progress->setSliderPosition(static_cast<int>(position));
+    });
+
+    connect(player, &QMediaPlayer::stateChanged, this, [=](QMediaPlayer::State state){
+        if (state == QMediaPlayer::PlayingState)
+        {
+            ui->btn_play->setIcon(QIcon(":/images/button/btn_playing.png"));
+        }
+        else
+        {
+            ui->btn_play->setIcon(QIcon(":/images/button/btn_play.png"));
+        }
+    });
+
+    connect(player,&QMediaPlayer::durationChanged,this, [=](qint64 duration){
+        //实际可播放时长 歌曲总时长music.duration
+        if (player->state() == QMediaPlayer::PlayingState) {
+            ui->slider_progress->setMaximum(static_cast<int>(duration/1000));
+        }
+
+    });
+    connect(ui->slider_progress, &QSlider::sliderMoved, this, [=](qint64 position){
+        player->setPosition(position * 1000);
+    });
+
 }
 
 MainWidget::~MainWidget()
@@ -244,21 +290,67 @@ void MainWidget::musicSearch(const QString &keystring) {
     QString requrl  = "http://iwxyi.com:3000/search?keywords=";
     //QString requrl = "http://mobilecdn.kugou.com/api/v3/search/song?format=json&keyword=";
     requrl = requrl + keystring.toUtf8().toPercentEncoding();
-    QNetworkRequest request = QNetworkRequest(QUrl(requrl));
+    QNetworkAccessManager *manager = new QNetworkAccessManager;
+    QNetworkRequest request(requrl);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded; charset=UTF-8");
     request.setHeader(QNetworkRequest::UserAgentHeader, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
-    networkManager->get(request);
+
+    connect(manager, &QNetworkAccessManager::finished, this, [=](QNetworkReply* reply) {
+        if (!reply) {
+            qDebug() << __FILE__ << __LINE__ << "Invalid reply pointer";
+            return;
+        }
+
+        if (reply->error() == QNetworkReply::NoError) {
+            QByteArray response = reply->readAll();
+            QJsonParseError error;
+            QJsonDocument document = QJsonDocument::fromJson(response, &error);
+            if (error.error != QJsonParseError::NoError) {
+                qDebug() << __FILE__ << __LINE__ << error.errorString();
+                return;
+            }
+
+            QJsonObject json = document.object();
+            if (json.value("code").toInt() != 200) {
+                qDebug() << __FILE__ << __LINE__ << json.value("message").toString();
+                return;
+            }
+
+            QJsonArray musics = json.value("result").toObject().value("songs").toArray();
+            songSearchResult.clear();
+            foreach (QJsonValue val, musics) {
+                songSearchResult << Music::fromJson(val.toObject());
+            }
+
+            setSearchResultTable(songSearchResult);
+        } else {
+            qDebug() << "Network error:" << reply->errorString();
+            QMessageBox::warning(this, "Network Error", reply->errorString());
+        }
+        reply->deleteLater();
+        manager->deleteLater();
+    });
+
+    manager->get(request);
+}
+
+QString MainWidget::msecondToString(int mseconds) {
+    int seconds = mseconds / 1000;
+    int minutes = seconds / 60;
+    seconds %= 60;
+    return QString("%1:%2").arg(minutes, 2, 10, QChar('0')).arg(seconds, 2, 10, QChar('0'));
+}
+
+void MainWidget::saveSongList(QString key, const SongList &songs)
+{
+    QJsonArray array;
+    foreach(Music music, songs)
+        array.append(music.toJson());
+    settings.setValue(key,array);
 }
 
 void MainWidget::setSearchResultTable(SongList songs)
 {
-    enum{
-        titleCol,
-        artistCol,
-        albumCol,
-        durationCol
-    };
-
     QTableWidget *table = ui->tableWidget_search;
     // table->setAlternatingRowColors(true);
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -279,17 +371,364 @@ void MainWidget::setSearchResultTable(SongList songs)
         table->setItem(row, albumCol, createItem(song.album.name));
         table->setItem(row, durationCol, createItem(msecondToString(song.duration)));
     }
+
+    QTimer::singleShot(0, this, [=]{
+        table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+    });
 }
 
-QString MainWidget::msecondToString(int mseconds) {
-    int seconds = mseconds / 1000;
-    int minutes = seconds / 60;
-    seconds %= 60;
-    return QString("%1:%2").arg(minutes, 2, 10, QChar('0')).arg(seconds, 2, 10, QChar('0'));
+QString MainWidget::songPath(const Music &music) const
+{
+    return musicFileDir.absoluteFilePath(snum(music.id) + ".mp3");
+}
+QString MainWidget::lyricPath(const Music &music) const
+{
+    return musicFileDir.absoluteFilePath(snum(music.id) + ".lrc");
+}
+QString MainWidget::coverPath(const Music &music) const
+{
+    return musicFileDir.absoluteFilePath(snum(music.id) + ".jpg");
+}
+
+bool MainWidget::isSongDownloaded(Music music)
+{
+    return QFileInfo(songPath(music)).exists();
+}
+
+/**
+ * 立即开始播放音乐
+ */
+void MainWidget::playLocalSong(Music music)
+{
+    qDebug() << "开始播放" << music.simpleString();
+    //mySystemTray->setToolTip(music.simpleString());
+    if (!isSongDownloaded(music))
+    {
+        qDebug() << "error:未下载歌曲：" << music.simpleString() << "开始下载";
+        playAfterDownloaded = music;
+        downloadSong(music);
+        return ;
+    }
+
+    // 设置信息
+    auto max16 = [=](QString s){
+        if (s.length() > 16)
+            s = s.left(15) + "...";
+        return s;
+    };
+
+
+    QString lableText = max16(music.name) +"\n"+max16(music.artistNames);
+    ui->label_songinfo->setText(lableText);
+    ui->label_songinfo->setWordWrap(true);
+    //ui->slider_progress->setMaximum(music.duration /1000);
+    // 开始播放
+    playingSong = music;
+    player->setMedia(QUrl::fromLocalFile(songPath(music)));
+    player->setPosition(0);
+    player->play();
+    emit signalSongPlayStarted(music);
+    setWindowTitle(music.name);
+
+    // 添加到本地歌曲
+    if (localSongs.contains(music))
+    {
+        qDebug() << "本地歌曲中已存在：" << music.simpleString();
+        return ;
+    }
+    else
+    {
+        localSongs.append(music);
+        saveSongList("music/local", localSongs);
+    }
+
+    // 保存当前歌曲
+    settings.setValue("music/currentSong", music.toJson());
+
+}
+
+/**
+ * 放入下载队列，准备下载（并不立即下载）
+ */
+void MainWidget::addDownloadSong(Music music)
+{
+    if (isSongDownloaded(music) || toDownLoadSongs.contains(music) || downloadingSong == music)
+        return ;
+    toDownLoadSongs.append(music);
+}
+
+/**
+ * 放入下载队列、或一首歌下载结束后，下载下一个
+ */
+void MainWidget::downloadNext()
+{
+    // 正在下载的歌已经下载了/即将下载的队列是空的 bool 0 false 1 true
+    if (downloadingSong.isValid() || !toDownLoadSongs.size())
+        return ;
+    Music music = toDownLoadSongs.takeFirst();
+    if (!music.isValid())
+        return downloadNext();
+    downloadSong(music);
+}
+
+void MainWidget::downloadFile(const QString &url, const Music &music) {
+    QNetworkAccessManager *fileManager = new QNetworkAccessManager(this);
+    QNetworkReply *reply = fileManager->get(QNetworkRequest(QUrl(url)));
+
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            qDebug() << "Download failed:" << reply->errorString();
+            reply->deleteLater();
+            return;
+        }
+
+        QByteArray fileData = reply->readAll();
+        QFile file(songPath(music));
+        if (file.open(QIODevice::WriteOnly)) {
+            file.write(fileData);
+            file.close();
+
+            emit signalSongDownloadFinished(music);
+
+            if (playAfterDownloaded == music)
+                playLocalSong(music);
+
+            downloadingSong = Music();
+            downloadNext();
+        } else {
+            qDebug() << "Failed to open file for writing:" << file.errorString();
+        }
+
+        reply->deleteLater();
+        fileManager->deleteLater();
+    });
+}
+
+QString MainWidget::formatSongInfo(const Music &music) {
+    auto max16 = [](const QString &s) {
+        return s.length() > 16 ? s.left(15) + "..." : s;
+    };
+    return max16(music.name) + "\n" + max16(music.artistNames);
+}
+
+void MainWidget::handleDownloadFailure(const Music &music) {
+    if (playAfterDownloaded == music) {
+        if (orderSongs.contains(music)) {
+            orderSongs.removeOne(music);
+            settings.setValue("music/currentSong", "");
+            ui->label_songinfo->clear();
+            QString labelText = formatSongInfo(music);
+            ui->label_songinfo->setText(labelText);
+            player->stop();
+        }
+        saveSongList("music/order", orderSongs);
+    }
+    downloadingSong = Music();
+    downloadNext();
+}
+
+
+
+void MainWidget::downloadSong(Music music)
+{
+    if (isSongDownloaded(music))
+        return;
+    downloadingSong = music;
+    QString url = API_DOMAIN +"/song/url?id=" + snum(music.id);
+    qDebug()<< "获取歌曲信息：" << music.simpleString();
+    QNetworkAccessManager *manager = new QNetworkAccessManager;
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded; charset=UTF-8");
+    request.setHeader(QNetworkRequest::UserAgentHeader, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
+    connect(manager, &QNetworkAccessManager::finished, this, [=](QNetworkReply* reply) {
+        QByteArray baData = reply->readAll();
+        QJsonParseError error;
+        QJsonDocument document = QJsonDocument::fromJson(baData, &error);
+        if (error.error != QJsonParseError::NoError) {
+            qDebug() << error.errorString();
+            return;
+        }
+        QJsonObject json = document.object();
+        if (json.value("code").toInt() != 200) {
+            qDebug() << "返回结果不为200：" << json.value("message").toString();
+            return;
+        }
+        QJsonArray array = json.value("data").toArray();
+        if (array.isEmpty()) {
+            qDebug() << "未找到歌曲：" << music.simpleString();
+            downloadingSong = Music();
+            downloadNext();
+            return;
+        }
+
+        json = array.first().toObject();
+        QString songUrl = json.value("url").toString();
+        QString url = JVAL_STR(url);
+        int br = JVAL_INT(br); // 比率320000
+        int size = JVAL_INT(size);
+        QString type = JVAL_STR(type); // mp3
+        QString encodeType = JVAL_STR(encodeType); // mp3
+        qDebug() << "  信息：" << br << size << type << encodeType << url;
+        if (size == 0) {
+            qDebug() << "下载失败，可能没有版权" << music.simpleString();
+            handleDownloadFailure(music);
+            return;
+        }
+
+        downloadFile(songUrl, music);
+        reply->deleteLater();
+        manager->deleteLater();
+    });
+
+    manager->get(request);
+
+    //downloadSongLyric(music);
+    //downloadSongCover(music);
+}
+void MainWidget::startPlaySong(Music music)
+{
+
+    if (isSongDownloaded(music))
+    {
+        playLocalSong(music);
+    }
+    else
+    {
+        playAfterDownloaded = music;
+        downloadSong(music);
+    }
+    if (!orderSongs.contains(music))
+        orderSongs.append(music);
+    saveSongList("music/order", orderSongs);
+    //setPlayListTable(orderSongs, ui->MusicTable);
+
+}
+
+void MainWidget::appendOrderSongs(SongList musics)
+{
+
+}
+
+void MainWidget::appendNextSongs(SongList musics)
+{
+
+}
+
+void MainWidget::appendMusicToPlayList(SongList musics, int row)
+{
+
+}
+
+void MainWidget::addFavorite(SongList musics)
+{
+
+}
+
+void MainWidget::removeFavorite(SongList musics)
+{
+
+}
+
+void MainWidget::onPlayNowTriggered() {
+    startPlaySong(menuCurrentSong);
+}
+
+void MainWidget::onPlayNextTriggered() {
+    appendNextSongs(menuMusics);
+}
+
+void MainWidget::onAddToPlayListTriggered() {
+    appendOrderSongs(menuMusics);
+}
+
+void MainWidget::onFavoriteTriggered() {
+    if (!favoriteSongs.contains(menuCurrentSong))
+        addFavorite(menuMusics);
+    else
+        removeFavorite(menuMusics);
 }
 
 void MainWidget::on_btn_setskin_clicked()
 {
     qDebug() << "todo";
+}
+
+
+void MainWidget::on_btn_logo_clicked()
+{
+    QMessageBox::information(this, "关于", "name: MusicPlayer \n info: a qt project for learning \n author: haojoy");
+}
+
+//右键菜单请求
+void MainWidget::handleContextMenuRequest(QTableWidget* table, const QPoint& pos) {
+    auto items = table->selectedItems();
+    foreach (auto item, items) {
+        int row = table->row(item);
+        int col = table->column(item);
+        if (col == 0)
+            menuMusics.append(songSearchResult.at(row));
+    }
+
+    int row = table->currentRow();
+    if (row > -1)
+        menuCurrentSong = songSearchResult.at(row);
+
+    playListMenu->setEnabled(!songplaylist.isEmpty());
+    favoriteAction->setText(favoriteSongs.contains(menuCurrentSong) ? "从我的喜欢中移除" : "添加到我的喜欢");
+    // 添加歌单菜单项并连接信号
+    for (int index = 0; index < songplaylist.size(); ++index) {
+        QAction* playlistAction = new QAction(songplaylist.at(index).name, this);
+        playListMenu->addAction(playlistAction);
+
+        connect(playlistAction, &QAction::triggered, this, [=]() {
+            appendMusicToPlayList(menuMusics, index);
+        });
+    }
+    contextMenu->exec(table->viewport()->mapToGlobal(pos));
+}
+
+void MainWidget::on_tableWidget_search_customContextMenuRequested(const QPoint &pos)
+{
+    if (songSearchResult.isEmpty()) {
+        return;
+    }
+    handleContextMenuRequest(ui->tableWidget_search, pos);
+}
+
+
+void MainWidget::on_tableWidget_search_itemDoubleClicked(QTableWidgetItem *item)
+{
+    int row = ui->tableWidget_search->row(item);
+    Music currentsong;
+    if (row > -1 )
+        currentsong = songSearchResult.at(row);
+    if (orderSongs.contains(currentsong))
+    {
+        orderSongs.removeOne(currentsong);
+       // setPlayListTable(orderSongs, ui->MusicTable);
+    }
+    else
+        orderSongs.insert(0, currentsong);
+    startPlaySong(currentsong);
+}
+
+
+void MainWidget::on_btn_play_clicked()
+{
+    if (!orderSongs.size())
+        return ;
+    if (player->state() == QMediaPlayer::PlayingState)
+    {
+        player->pause();
+    }
+    else
+    {
+        if (!playingSong.isValid())
+        {
+            //playNext();
+            return ;
+        }
+        player->play();
+    }
 }
 

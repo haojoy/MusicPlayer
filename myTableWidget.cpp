@@ -1,28 +1,34 @@
 #include <QHeaderView>
-#include <QDebug>
+#include <QStyledItemDelegate>
 #include "myTableWidget.h"
 
-MyTableWidget::MyTableWidget(QWidget *parent):QTableWidget(parent){
 
-    setMouseTracking(true); // 启用鼠标跟踪
-
+ MyTableWidget::MyTableWidget(QWidget *parent)
+    : QTableWidget(parent), hoverDelegate(new HoverDelegate(this))
+{
+    setMouseTracking(true);
+    setItemDelegate(hoverDelegate);
 }
 
-void MyTableWidget::handleHoverEvent(const QPoint &pos){
-    QModelIndex index = indexAt(pos);
-    if (index.isValid()) {
-        clearSelection(); // 清除之前的选择
-        selectRow(index.row()); // 选中当前悬停的行
+void MyTableWidget::handleHoverEvent(int row){
+    if (row != hoverDelegate->hoverRow)
+    {
+        hoverDelegate->setHoverRow(row);
+        viewport()->update();
     }
 
 }
 
-void MyTableWidget::mouseMoveEvent(QMouseEvent *event){
-    handleHoverEvent(event->pos());
+void MyTableWidget::mouseMoveEvent(QMouseEvent* event){
+    int row = rowAt(event->pos().y());
+    handleHoverEvent(row);
     QTableWidget::mouseMoveEvent(event);
+
 }
 
-// void MyTableWidget::wheelEvent(QWheelEvent *event){
-//     handleHoverEvent(event->pos());
-//     QTableWidget::wheelEvent(event);
-// }
+
+void MyTableWidget::wheelEvent(QWheelEvent *event){
+    int row = rowAt(event->pos().y());
+    handleHoverEvent(row);
+    QTableWidget::wheelEvent(event);
+}

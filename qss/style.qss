@@ -1,31 +1,3 @@
-/*QWidget{
-    background-color:rgba(97, 76, 64, 127);
-    background-image: url(:/images/background.jpg) no-repeat;
-}*/
-QSlider::groove:horizontal {
-    border: 1px solid #bbb;
-    background: #ddd;
-    height: 5px;
-    border-radius: 4px;
-}
-
-QSlider::handle:horizontal {
-    background: #00BFFF;
-    border: 1px solid #777;
-    width: 3px;
-    height: 3px;
-    border-radius: 3px;
-    margin: -5px 0; /* Handle overlaps the groove */
-}
-
-QSlider::add-page:horizontal {
-    background: #C0C0C0;
-}
-
-QSlider::sub-page:horizontal {
-    background: #00BFFF;
-}
-
 #line_v1, #line_v2 {
     background-color: #d7d7d7;
     min-width: 2px;
@@ -78,7 +50,7 @@ QPushButton#btn_close2:hover {
 
 QPushButton#btn_albumpic
 {
-    border-image:url(:/images/AlbumImg/shenshi.jpg);
+    border-image:url(:/images/AlbumImg/albumUnknown.png);
 }
 
 QLineEdit {
@@ -117,13 +89,13 @@ QListWidget::item:selected {
 QTableWidget{
     background: transparent;
     border: none;
-/*    alternate-background-color: #f0f0f0;*/
+    /*alternate-background-color: #d0d0d0;*/
 }
 QHeaderView::section {
     background-color: transparent;
     border: none;
     color:#f8f7f7;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
 }
 QTableCornerButton::section {
@@ -132,22 +104,22 @@ QTableCornerButton::section {
 QTableWidget::item {
     color: #ece7e7;
 }
-/*
-QTableView::item:alternate {
-    background-color: #e0e0e0;
+
+/*QTableView::item:alternate {
+    background-color: #d0d0d0;
 }*/
 
 /* 设置 QTableWidget 的悬停行颜色 */
 
-QTableWidget::item:hover {
+/*QTableWidget::item:hover {
 
     background-color: rgba(255, 255, 255, 127);
 }
 
-/* 如果需要设置选中行的颜色，也可以配置 */
 QTableWidget::item:selected {
     background-color: rgba(93, 76, 66, 127);
 }
+*/
 
 
 /*#widget_bottom{

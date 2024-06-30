@@ -29,6 +29,7 @@ SOURCES += \
 HEADERS += \
     mainwidget.h \
     music.h \
+    mySlider.h \
     myTableWidget.h \
     switchanimation.h
 
