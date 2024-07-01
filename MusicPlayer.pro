@@ -23,12 +23,14 @@ QMAKE_TARGET_DESCRIPTION = QT MusicPlayer
 SOURCES += \
     main.cpp \
     mainwidget.cpp \
+    myLyricWidget.cpp \
     myTableWidget.cpp \
     switchanimation.cpp
 
 HEADERS += \
     mainwidget.h \
     music.h \
+    myLyricWidget.h \
     mySlider.h \
     myTableWidget.h \
     switchanimation.h

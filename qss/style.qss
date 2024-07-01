@@ -22,9 +22,21 @@ QLineEdit[placeholderText] {
     color: white; /* 设置 placeholderText 的颜色 */
 }
 
+QLabel#label_lrchead{
+    color : white;
+    font-size: 32px;
+    font-weight: bold;
+    font-family: "Arial";
+}
 QLabel {
     color : white;
 }
+QToolTip {
+    background-color: #AAA09A;
+    color: white;
+    border: none;
+}
+
 QTextEdit {
         border: 2px solid rgba(211, 211, 211, 128);
         /*background-color:rgb(42, 42, 42);
@@ -38,7 +50,7 @@ QPushButton{
     font-weight: bold;
 }
 QPushButton::hover{
-    background-color: rgba(142,128,119,127)
+    background-color: rgba(142,128,119,127);
 }
 
 QPushButton#btn_close:hover {
@@ -62,10 +74,6 @@ QLineEdit {
         padding: 0 8px;
         selection-background-color: rgb(187, 187, 187);
         selection-color: rgb(60, 63, 65);
-}
-
-QLabel {
-        color:rgb(0,0,0);
 }
 
 QListWidget {

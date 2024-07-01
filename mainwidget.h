@@ -28,6 +28,8 @@ QT_END_NAMESPACE
 class MainWidget : public SwitchAnimation
 {
     Q_OBJECT
+    Q_PROPERTY(int lyricScroll READ getLyricScroll WRITE setLyricScroll)
+
     enum{
         titleCol,
         artistCol,
@@ -62,15 +64,15 @@ private:
 
 
     void downloadFile(const QString &url, const Music &music);
-    QString formatSongInfo(const Music &music);
+    void setLableSongInfo(const Music &music);
     void handleDownloadFailure(const Music &music);
     // 下载音乐
     void playLocalSong(Music music);
     void addDownloadSong(Music music);
     void downloadNext();
     void downloadSong(Music music);
-    //void downloadSongLyric(Music music);
-    //void downloadSongCover(Music music);
+    void downloadSongLyric(Music music);
+    void downloadSongCover(Music music);
 
     // 播放音乐
     void startPlaySong(Music music);
@@ -80,6 +82,9 @@ private:
     void appendNextSongs(SongList musics);
     void appendMusicToPlayList(SongList musics, int row);
     //void ClearPlayList();
+
+    void setCurrentCover(const QPixmap& pixmap);
+    void setCurrentLyric(QString lyric);
 
     void addFavorite(SongList musics);
     void removeFavorite(SongList musics);
@@ -97,6 +102,7 @@ private:
 
 
     void handleContextMenuRequest(QTableWidget* table, const QPoint& pos);
+    QNetworkRequest getNetworkRequest(const QString &requrl);
 protected:
     //实现窗口可拖动
     void mousePressEvent(QMouseEvent *event) override;
@@ -105,6 +111,15 @@ protected:
 public:
     MainWidget(QWidget *parent = nullptr);
     ~MainWidget();
+
+signals:
+    void signalOrderSongPlayed(Music music);
+    void signalSongDownloadFinished(Music music);
+    void signalLyricDownloadFinished(Music music);
+    void signalCoverDownloadFinished(Music music);
+
+    void signalSongPlayStarted(Music music);
+    void signalSongPlayFinished(Music music);
 
 private slots:
     void on_btn_close_clicked();
@@ -126,6 +141,10 @@ private slots:
     void on_btn_minsize_clicked();
 
     void on_btn_maxsize_clicked();
+
+    void on_btn_minsize2_clicked();
+
+    void on_btn_maxsize2_clicked();
 
     // 搜索歌曲
     void on_btn_search_clicked();
@@ -150,6 +169,12 @@ private slots:
 
     void onFavoriteTriggered();
 
+    void slotPlayerPositionChanged();
+
+
+private:
+    void setLyricScroll(int x);
+    int getLyricScroll() const;
 private:
     Ui::MainWidget *ui;
     //QNetworkAccessManager *networkManager;
@@ -162,6 +187,8 @@ private:
     QMenu* playListMenu;
     SongList menuMusics;
     Music menuCurrentSong;
+
+    int lyricScroll;
 
     QSettings settings;
     QDir musicFileDir;   // 用于程序识别
@@ -180,14 +207,6 @@ private:
     SongList localSongs;             // 本地歌曲
     SongList toDownLoadSongs;        // 即将下载
     PlayListList songplaylist; // 歌单
-signals:
-    void signalOrderSongPlayed(Music music);
-    void signalSongDownloadFinished(Music music);
-    void signalLyricDownloadFinished(Music music);
-    void signalCoverDownloadFinished(Music music);
-
-    void signalSongPlayStarted(Music music);
-    void signalSongPlayFinished(Music music);
 
 };
 #endif // MAINWIDGET_H
