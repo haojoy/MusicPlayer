@@ -180,3 +180,10 @@ QCheckBox::indicator:unchecked {
 QStatusBar {
 	color:rgb(240,240,240);
 }
+
+QMessageBox QLabel{
+    color: black;
+}
+QMessageBox QPushButton{
+    color: black;
+}

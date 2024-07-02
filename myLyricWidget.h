@@ -11,9 +11,8 @@
 
 const int switchRowDuration = 200;
 
-struct LyricBean {
-    qint64 start = 0;
-    qint64 end = 0;
+struct LyricLine {
+    qint64 starttime = 0;
     QString text;
 };
 
@@ -38,7 +37,7 @@ private:
     void ensureCurrentRowVisible();
 private:
     QSettings settings;
-    QVector<LyricBean> lyricStream;
+    QVector<LyricLine> lyricStream;
     int currentRow;
     qint64 switchRowTimestamp;
     QTimer *updateTimer;

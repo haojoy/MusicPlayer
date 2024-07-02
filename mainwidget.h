@@ -17,6 +17,7 @@
 #include <QMenu>
 #include "music.h"
 #include "switchanimation.h"
+#include "desktopLyricWidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -83,8 +84,12 @@ private:
     void appendMusicToPlayList(SongList musics, int row);
     //void ClearPlayList();
 
-    void setCurrentCover(const QPixmap& pixmap);
+    void setCurrentCover(Music music);
     void setCurrentLyric(QString lyric);
+
+    // 设置背景
+    void sethomePageBackImagePath(QString imagePath);
+    void setlyricPageBackImagePath(QString imagePath);
 
     void addFavorite(SongList musics);
     void removeFavorite(SongList musics);
@@ -100,7 +105,7 @@ private:
     void restoreSongList(QString key, SongList &songs);
     void restorePlayList(QString key, PlayListList &playlistlist);
 
-
+    void connectDesktopLyricSignals();
     void handleContextMenuRequest(QTableWidget* table, const QPoint& pos);
     QNetworkRequest getNetworkRequest(const QString &requrl);
 protected:
@@ -172,6 +177,8 @@ private slots:
     void slotPlayerPositionChanged();
 
 
+    void on_btn_desklrc_clicked();
+
 private:
     void setLyricScroll(int x);
     int getLyricScroll() const;
@@ -189,6 +196,7 @@ private:
     Music menuCurrentSong;
 
     int lyricScroll;
+
 
     QSettings settings;
     QDir musicFileDir;   // 用于程序识别
@@ -208,5 +216,11 @@ private:
     SongList toDownLoadSongs;        // 即将下载
     PlayListList songplaylist; // 歌单
 
+    DesktopLyricWidget* desktopLyric;
+
+    QString defaultImagePath;
+    QString paintingImagePath;
+    QString homePageImagePath;
+    QString lyricPageImagePath;
 };
 #endif // MAINWIDGET_H

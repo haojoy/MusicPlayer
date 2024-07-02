@@ -48,13 +48,13 @@ void MyLyricWidget::loadLyric(const QString &text)
         match = re.match(line);
         if (match.hasMatch())
         {
-            LyricBean lyric;
+            LyricLine lyric;
             int minute = match.captured(1).toInt();
             int second = match.captured(2).toInt();
             int millisecond = match.captured(3).toInt();
 
             // 计算歌词开始时间（毫秒为单位）
-            lyric.start = minute * 60000 + second * 1000 + millisecond;
+            lyric.starttime = minute * 60000 + second * 1000 + millisecond;
             // 提取歌词文本
             lyric.text = match.captured(4).trimmed();
             // 添加到歌词流列表
@@ -82,18 +82,18 @@ bool MyLyricWidget::setPosition(qint64 position)
     if (lyricStream.isEmpty())
         return false;
 
-    LyricBean lyric = lyricStream.at(currentRow);
-    if (currentRow == lyricStream.size() - 1 && lyric.start <= position)
+    LyricLine lyric = lyricStream.at(currentRow);
+    if (currentRow == lyricStream.size() - 1 && lyric.starttime <= position)
         return false;
 
-    LyricBean nextLyric = currentRow == lyricStream.size() - 1 ? LyricBean() : lyricStream.at(currentRow + 1);
-    if (lyric.start <= position && nextLyric.start >= position)
+    LyricLine nextLyric = currentRow == lyricStream.size() - 1 ? LyricLine() : lyricStream.at(currentRow + 1);
+    if (lyric.starttime <= position && nextLyric.starttime >= position)
         return false;
 
-    if (lyric.start > position)
+    if (lyric.starttime > position)
         currentRow = 0;
 
-    while (currentRow + 1 < lyricStream.size() && lyricStream.at(currentRow + 1).start < position)
+    while (currentRow + 1 < lyricStream.size() && lyricStream.at(currentRow + 1).starttime < position)
     {
         currentRow++;
     }

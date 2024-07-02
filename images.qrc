@@ -27,6 +27,7 @@
         <file>images/button/btn_like2.png</file>
         <file>images/AlbumImg/albumUnknown.png</file>
         <file>images/button/btn_playing.png</file>
+        <file>images/button/btn_lrc_show.png</file>
     </qresource>
     <qresource prefix="/qss">
         <file>qss/style.qss</file>

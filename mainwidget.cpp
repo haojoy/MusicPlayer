@@ -9,7 +9,12 @@ MainWidget::MainWidget(QWidget *parent)
     settings(QApplication::applicationDirPath() + "/musics.ini", QSettings::Format::IniFormat),
     musicFileDir(QApplication::applicationDirPath() + "/musics"),
     downloadedMusicFileDir(QApplication::applicationDirPath() + "/downloaded"),
-    player(new QMediaPlayer(this))
+    player(new QMediaPlayer(this)),
+    desktopLyric(new DesktopLyricWidget()),
+    defaultImagePath(":/images/background.jpg"),
+    paintingImagePath(defaultImagePath),
+    homePageImagePath(defaultImagePath),
+    lyricPageImagePath(defaultImagePath)
 {
     ui->setupUi(this);
 
@@ -27,6 +32,21 @@ MainWidget::MainWidget(QWidget *parent)
     contextMenu->addMenu(playListMenu);
 
     musicFileDir.mkpath(musicFileDir.absolutePath());
+
+
+
+    bool showDeskTopLyric = settings.value("music/desktopLyric", false).toBool();
+
+    if (showDeskTopLyric)
+    {
+        desktopLyric->show();
+        ui->btn_desklrc->setIcon(QIcon(QPixmap(":/images/button/btn_lrc_show.png")));
+    }
+    else
+    {
+        desktopLyric->hide();
+        ui->btn_desklrc->setIcon(QIcon(QPixmap(":/images/button/btn_lrc.png")));
+    }
 
     // UI相关初始化
     init_HandleUI();
@@ -66,7 +86,8 @@ void MainWidget::paintEvent(QPaintEvent *event)
     // qDebug() << "rect:" <<rect().height() << rect().width();
     // qDebug() << "---rect:" <<rectajust.height() << rectajust.width();
     // 绘制背景图像
-    QPixmap pixmap(":/images/background.jpg");
+
+    QPixmap pixmap(paintingImagePath);
     painter.drawPixmap(rectajust, pixmap);
 
     // 设置背景颜色透明度
@@ -94,7 +115,13 @@ void MainWidget::showLyricsPage()
     QTimer::singleShot(animTime, this, [=] {
         ui->tabWidget->setCurrentWidget(ui->tab_lrc);
     });
+
+    //ui->btn_albumpic->setStyleSheet(QString("QPushButton { border-image: url(%1); }").arg(btnImagePath));
     ui->btn_albumpic->setStyleSheet("QPushButton::hover{border-image:url(:/images/button/btn_down.png);}");
+
+    if(player->state() == QMediaPlayer::PlayingState){
+        setlyricPageBackImagePath(coverPath(playingSong));
+    }
 }
 
 // 显示主界面
@@ -102,7 +129,10 @@ void MainWidget::showHomePage()
 {
     this->slideAnimation(this, ui->widget_lrc, AnimDirection::Down);
     ui->tabWidget->setCurrentWidget(ui->tab_homePage);
+
+    //ui->btn_albumpic->setStyleSheet(QString("QPushButton { border-image: url(%1); }").arg(btnImagePath));
     ui->btn_albumpic->setStyleSheet("QPushButton::hover{border-image:url(:/images/button/btn_up.png);}");
+    sethomePageBackImagePath(homePageImagePath);
     ui->edit_search->clearFocus();
 }
 
@@ -144,11 +174,11 @@ void MainWidget::init_HandleSignalsAndSlots(){
     });
 
 
-
     connect(ui->slider_progress, &QSlider::sliderMoved, this, [=](qint64 position){
         player->setPosition(position * 1000);
     });
 
+    connectDesktopLyricSignals();
 }
 
 MainWidget::~MainWidget()
@@ -377,6 +407,44 @@ void MainWidget::saveSongList(QString key, const SongList &songs)
     settings.setValue(key,array);
 }
 
+void MainWidget::connectDesktopLyricSignals()
+{
+    connect(desktopLyric, &DesktopLyricWidget::signalhide, this, [=]{
+        ui->btn_desklrc->setIcon(QIcon(QPixmap(":/images/button/btn_lrc.png")));
+        settings.setValue("music/desktopLyric", false);
+    });
+    connect(desktopLyric, &DesktopLyricWidget::signalSWitchTrans, this, [=]{
+        desktopLyric->close();
+        desktopLyric->deleteLater();
+        desktopLyric = new DesktopLyricWidget(nullptr);
+        connectDesktopLyricSignals();
+        desktopLyric->show();
+
+        if (playingSong.isValid())
+        {
+            Music song = playingSong;
+            if (QFileInfo(lyricPath(song)).exists())
+            {
+                QFile file(lyricPath(song));
+                file.open(QIODevice::ReadOnly | QIODevice::Text);
+                QTextStream stream(&file);
+                QString lyric;
+                QString line;
+                while (!stream.atEnd())
+                {
+                    line = stream.readLine();
+                    lyric.append(line+"\n");
+                }
+                file.close();
+
+                desktopLyric->setLyric(lyric);
+                desktopLyric->setPosition(player->position());
+            }
+        }
+    });
+
+}
+
 void MainWidget::setSearchResultTable(SongList songs)
 {
     QTableWidget *table = ui->tableWidget_search;
@@ -445,13 +513,9 @@ void MainWidget::playLocalSong(Music music)
     //  设置封面
     if (QFileInfo(coverPath(music)).exists())
     {
-        QPixmap pixmap(coverPath(music), "1");
-        if (pixmap.isNull())
-            qDebug() << "warning: 本地封面是空的" << music.simpleString() << coverPath(music);
-        // 自适应高度
-        pixmap = pixmap.scaledToHeight(ui->lable_songinfo->height());
-        ui->lable_songinfo->setPixmap(pixmap);
-        setCurrentCover(pixmap);
+        QIcon buttonIcon(coverPath(music));
+        ui->btn_albumpic->setIcon(buttonIcon);
+        setCurrentCover(music);
     }
     else
     {
@@ -764,9 +828,9 @@ void MainWidget::downloadSongCover(Music music)
             // 正是当前要播放的歌曲
             if (playAfterDownloaded == music || playingSong == music)
             {
-                pixmap = pixmap.scaledToHeight(ui->btn_albumpic->height());
-                ui->btn_albumpic->setIcon(pixmap);
-                setCurrentCover(pixmap);
+                QIcon buttonIcon(coverPath(music));
+                ui->btn_albumpic->setIcon(buttonIcon);
+                setCurrentCover(music);
             }
         }
         else
@@ -818,8 +882,33 @@ void MainWidget::setCurrentCover(const QPixmap &pixmap)
 
 void MainWidget::setCurrentLyric(QString lyric)
 {
-    //desktopLyric->setLyric(lyric);
+    desktopLyric->setLyric(lyric);
     ui->scrollarea_lrc->loadLyric(lyric);
+}
+
+void MainWidget::sethomePageBackImagePath(QString imagePath)
+{
+    if(lyricPageImagePath != homePageImagePath){
+        paintingImagePath = homePageImagePath;
+        update();
+    }
+    if(imagePath != homePageImagePath){
+        homePageImagePath = imagePath;
+        paintingImagePath = imagePath;
+        update();
+    }
+}
+
+void MainWidget::setlyricPageBackImagePath(QString imagePath)
+{
+    if(!QFileInfo(imagePath).exists()){
+        return;
+    }
+    if(imagePath != lyricPageImagePath || lyricPageImagePath != homePageImagePath){
+        lyricPageImagePath = imagePath;
+        paintingImagePath = imagePath;
+        update();
+    }
 }
 
 void MainWidget::addFavorite(SongList musics)
@@ -854,7 +943,8 @@ void MainWidget::onFavoriteTriggered() {
 void MainWidget::slotPlayerPositionChanged()
 {
     qint64 position = player->position();
-
+    if (desktopLyric && !desktopLyric->isHidden())
+        desktopLyric->setPosition(position);
     if (ui->scrollarea_lrc->setPosition(position))
     {
         QPropertyAnimation* ani = new QPropertyAnimation(this, "lyricScroll");
@@ -962,5 +1052,24 @@ void MainWidget::on_btn_play_clicked()
         }
         player->play();
     }
+}
+
+
+void MainWidget::on_btn_desklrc_clicked()
+{
+
+    bool showDesktopLyric = !settings.value("music/desktopLyric", false).toBool();
+    settings.setValue("music/desktopLyric", showDesktopLyric);
+    if (showDesktopLyric)
+    {
+        desktopLyric->show();
+        ui->btn_desklrc->setIcon(QIcon(QPixmap(":/images/button/btn_lrc_show.png")));
+    }
+    else
+    {
+        desktopLyric->hide();
+        ui->btn_desklrc->setIcon(QIcon(QPixmap(":/images/button/btn_lrc.png")));
+    }
+
 }
 
