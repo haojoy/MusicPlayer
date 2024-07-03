@@ -18,6 +18,7 @@
 #include "music.h"
 #include "switchanimation.h"
 #include "desktopLyricWidget.h"
+#include "volumeSlider.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -59,6 +60,7 @@ private:
     QString coverPath(const Music &music) const;
     bool isSongDownloaded(Music music);
 
+    void setPlayListTable(SongList songs, QTableWidget *table);
     // 搜索音乐
     void musicSearch(const QString &keystring);
     void setSearchResultTable(SongList songs);
@@ -83,8 +85,6 @@ private:
     void appendNextSongs(SongList musics);
     void appendMusicToPlayList(SongList musics, int row);
     //void ClearPlayList();
-
-    void setCurrentCover(Music music);
     void setCurrentLyric(QString lyric);
 
     // 设置背景
@@ -108,11 +108,16 @@ private:
     void connectDesktopLyricSignals();
     void handleContextMenuRequest(QTableWidget* table, const QPoint& pos);
     QNetworkRequest getNetworkRequest(const QString &requrl);
+
+    void setLyricScroll(int x);
+    int getLyricScroll() const;
 protected:
     //实现窗口可拖动
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+
+    bool eventFilter(QObject *watched, QEvent *event) override;
 public:
     MainWidget(QWidget *parent = nullptr);
     ~MainWidget();
@@ -164,6 +169,10 @@ private slots:
 
     void on_tableWidget_search_itemDoubleClicked(QTableWidgetItem *item);
 
+     void on_tableWidget_favorite_customContextMenuRequested(const QPoint &pos);
+
+     void on_tableWidget_favorite_itemDoubleClicked(QTableWidgetItem *item);
+
     void on_btn_play_clicked();
 
     void onPlayNowTriggered();
@@ -179,12 +188,22 @@ private slots:
 
     void on_btn_desklrc_clicked();
 
-private:
-    void setLyricScroll(int x);
-    int getLyricScroll() const;
+    void on_btn_volume_clicked();
+
+    void showSliderWindow();
+
+    void hideSliderWindow();
+
+    void updateVolumeSliderValue(int value);
+
+    void on_btn_like_clicked();
+
+    void on_btn_pre_clicked();
+
+    void on_btn_next_clicked();
+
 private:
     Ui::MainWidget *ui;
-    //QNetworkAccessManager *networkManager;
 
     QMenu* contextMenu;
     QAction* playNowAction;
@@ -217,6 +236,8 @@ private:
     PlayListList songplaylist; // 歌单
 
     DesktopLyricWidget* desktopLyric;
+    VolumeSlider *volumeSliderWnd;
+
 
     QString defaultImagePath;
     QString paintingImagePath;

@@ -33,8 +33,6 @@ MainWidget::MainWidget(QWidget *parent)
 
     musicFileDir.mkpath(musicFileDir.absolutePath());
 
-
-
     bool showDeskTopLyric = settings.value("music/desktopLyric", false).toBool();
 
     if (showDeskTopLyric)
@@ -47,6 +45,24 @@ MainWidget::MainWidget(QWidget *parent)
         desktopLyric->hide();
         ui->btn_desklrc->setIcon(QIcon(QPixmap(":/images/button/btn_lrc.png")));
     }
+
+    volumeSliderWnd = new VolumeSlider(ui->btn_volume,this),
+    volumeSliderWnd->hide();
+
+    // 音量
+    int volume = settings.value("music/volume", 20).toInt();
+    bool mute = settings.value("music/mute", false).toBool();
+    if (mute)
+    {
+        volume = 0;
+        volumeSliderWnd->setSliderValue(0);
+        ui->btn_volume->setIcon(QIcon(":/images/button/volume_close.png"));
+
+    }
+    player->setVolume(volume);
+
+
+    ui->btn_volume->installEventFilter(this);
 
     // UI相关初始化
     init_HandleUI();
@@ -63,6 +79,12 @@ void MainWidget::init_HandleUI(){
     // qss style QHeaderView::section
     ui->tableWidget_search->horizontalHeader()->setStyleSheet("background-color:transparent");
     ui->tableWidget_search->verticalHeader()->setStyleSheet("background-color:transparent");
+    ui->tableWidget_favorite->horizontalHeader()->setStyleSheet("background-color:transparent");
+    ui->tableWidget_favorite->verticalHeader()->setStyleSheet("background-color:transparent");
+    ui->tableWidget_local->horizontalHeader()->setStyleSheet("background-color:transparent");
+    ui->tableWidget_local->verticalHeader()->setStyleSheet("background-color:transparent");
+    ui->tableWidget_recently->horizontalHeader()->setStyleSheet("background-color:transparent");
+    ui->tableWidget_recently->verticalHeader()->setStyleSheet("background-color:transparent");
 
     QString lineeditstyle = "QLineEdit {border: 1px solid lightgray; border-radius: 10px;padding-left: 10px;background-color: rgba(142,128,119,127)}";
     ui->lineEdit_songlistname->setStyleSheet(lineeditstyle);
@@ -179,6 +201,8 @@ void MainWidget::init_HandleSignalsAndSlots(){
     });
 
     connectDesktopLyricSignals();
+
+    connect(volumeSliderWnd->getSlider(), &QSlider::sliderMoved, this, &MainWidget::updateVolumeSliderValue);
 }
 
 MainWidget::~MainWidget()
@@ -213,6 +237,20 @@ void MainWidget::mouseReleaseEvent(QMouseEvent *event)
     }
 }
 
+bool MainWidget::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == ui->btn_volume) {
+        if (event->type() == QEvent::Enter) {
+            showSliderWindow();
+            return true;
+        } else if (event->type() == QEvent::Leave) {
+            hideSliderWindow();
+            return true;
+        }
+    }
+    return QWidget::eventFilter(watched, event);
+}
+
 void MainWidget::on_btn_down_clicked()
 {
     showHomePage();
@@ -229,23 +267,95 @@ void MainWidget::on_btn_albumpic_clicked()
     }
 }
 
+void MainWidget::setPlayListTable(QList<Music> songs, QTableWidget *table)
+{
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+    table->clear();
+
+    table->setColumnCount(4);
+    QStringList headers{"标题", "作者", "专辑", "时长"};
+    table->setHorizontalHeaderLabels(headers);
+    QList<int> tableColumnWidths = { 300, 280, 260, 60 };
+    if(this->isMaximized()){
+        tableColumnWidths = { 480, 320, 420, 80 };
+    }
+    // 设置每列的原始宽度
+    for (int col = 0; col < 4; ++col) {
+        table->setColumnWidth(col, tableColumnWidths[col]);
+    }
+
+    // 设置列长度
+    QFontMetrics fm(font());
+    auto createItem = [&](QString text, int maxWidth) {
+        QTableWidgetItem *item = new QTableWidgetItem();
+        if (fm.horizontalAdvance(text) > maxWidth) {
+            item->setToolTip(text); // 设置 tooltip 显示完整文本
+            text = fm.elidedText(text, Qt::ElideRight, maxWidth); // 截断文本并显示省略号
+        }
+        item->setText(text);
+        return item;
+    };
+
+    table->setRowCount(songs.size());
+    for (int row = 0; row < songs.size(); row++)
+    {
+        Music song = songs.at(row);
+        table->setItem(row, titleCol, createItem(song.name, tableColumnWidths[titleCol]));
+        table->setItem(row, artistCol, createItem(song.artistNames, tableColumnWidths[artistCol]));
+        table->setItem(row, albumCol, createItem(song.album.name, tableColumnWidths[albumCol]));
+        table->setItem(row, durationCol, createItem(msecondToString(song.duration), tableColumnWidths[durationCol]));
+    }
+}
+
+void MainWidget::setSearchResultTable(SongList songs)
+{
+    QTableWidget *table = ui->tableWidget_search;
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    table->setColumnCount(4);
+    QStringList headers{"标题", "作者", "专辑", "时长"};
+    table->setHorizontalHeaderLabels(headers);
+    table->setRowCount(songs.size());
+    auto createItem = [=](const QString &text) {
+        QTableWidgetItem *item = new QTableWidgetItem();
+        item->setText(text);
+        return item;
+    };
+    for (int row = 0; row < songs.size(); row++)
+    {
+        Music song = songs.at(row);
+        table->setItem(row, titleCol, createItem(song.name));
+        table->setItem(row, artistCol, createItem(song.artistNames));
+        table->setItem(row, albumCol, createItem(song.album.name));
+        table->setItem(row, durationCol, createItem(msecondToString(song.duration)));
+    }
+
+    QTimer::singleShot(0, this, [=]{
+        table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+    });
+
+}
+
 void MainWidget::on_btn_favorite_clicked()
 {
+    setPlayListTable(favoriteSongs, ui->tableWidget_favorite);
     ui->tabWidget_switchcontent->setCurrentWidget(ui->tab_favorite);
 }
 
 void MainWidget::on_btn_recently_clicked()
 {
+    setPlayListTable(orderSongs, ui->tableWidget_recently);
     ui->tabWidget_switchcontent->setCurrentWidget(ui->tab_recentlyPlayed);
 }
 
 void MainWidget::on_btn_songList_clicked()
 {
+
     ui->tabWidget_switchcontent->setCurrentWidget(ui->tab_defaultSongList);
 }
 
 void MainWidget::on_btn_localsong_clicked()
 {
+    setPlayListTable(localSongs, ui->tableWidget_local);
     ui->tabWidget_switchcontent->setCurrentWidget(ui->tab_local);
 }
 
@@ -346,10 +456,10 @@ QNetworkRequest MainWidget::getNetworkRequest(const QString &requrl)
     request.setHeader(QNetworkRequest::UserAgentHeader, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36");
     return request;
 }
+
 void MainWidget::musicSearch(const QString &keystring) {
-    QString requrl  = "http://iwxyi.com:3000/search?keywords=";
+    QString requrl = API_DOMAIN +"search?keywords=" + keystring.toUtf8().toPercentEncoding();
     //QString requrl = "http://mobilecdn.kugou.com/api/v3/search/song?format=json&keyword=";
-    requrl = requrl + keystring.toUtf8().toPercentEncoding();
     QNetworkAccessManager *manager = new QNetworkAccessManager;
     QNetworkRequest request = getNetworkRequest(requrl);
 
@@ -445,33 +555,6 @@ void MainWidget::connectDesktopLyricSignals()
 
 }
 
-void MainWidget::setSearchResultTable(SongList songs)
-{
-    QTableWidget *table = ui->tableWidget_search;
-    // table->setAlternatingRowColors(true);
-    table->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    table->setColumnCount(4);
-    QStringList headers{"标题", "作者", "专辑", "时长"};
-    table->setHorizontalHeaderLabels(headers);
-    table->setRowCount(songs.size());
-    auto createItem = [=](const QString &text) {
-        QTableWidgetItem *item = new QTableWidgetItem();
-        item->setText(text);
-        return item;
-    };
-    for (int row = 0; row < songs.size(); row++)
-    {
-        Music song = songs.at(row);
-        table->setItem(row, titleCol, createItem(song.name));
-        table->setItem(row, artistCol, createItem(song.artistNames));
-        table->setItem(row, albumCol, createItem(song.album.name));
-        table->setItem(row, durationCol, createItem(msecondToString(song.duration)));
-    }
-
-    QTimer::singleShot(0, this, [=]{
-        table->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-    });
-}
 
 QString MainWidget::songPath(const Music &music) const
 {
@@ -491,9 +574,6 @@ bool MainWidget::isSongDownloaded(Music music)
     return QFileInfo(songPath(music)).exists();
 }
 
-/**
- * 立即开始播放音乐
- */
 void MainWidget::playLocalSong(Music music)
 {
     qDebug() << "开始播放" << music.simpleString();
@@ -510,19 +590,17 @@ void MainWidget::playLocalSong(Music music)
     //ui->slider_progress->setMaximum(music.duration /1000);
 
 
-    //  设置封面
     if (QFileInfo(coverPath(music)).exists())
     {
         QIcon buttonIcon(coverPath(music));
         ui->btn_albumpic->setIcon(buttonIcon);
-        setCurrentCover(music);
     }
     else
     {
         downloadSongCover(music);
     }
 
-    // 设置
+
     if (QFileInfo(lyricPath(music)).exists())
     {
         QFile file(lyricPath(music));
@@ -662,6 +740,7 @@ void MainWidget::downloadSong(Music music)
         return;
     downloadingSong = music;
     QString url = API_DOMAIN +"/song/url?id=" + snum(music.id);
+    //QString url = API_DOMAIN +"/song/url/v1?id=" + snum(music.id) + "&level=jymaster";
     qDebug()<< "获取歌曲信息：" << music.simpleString();
     QNetworkAccessManager *manager = new QNetworkAccessManager;
     QNetworkRequest request = getNetworkRequest(url);
@@ -830,7 +909,7 @@ void MainWidget::downloadSongCover(Music music)
             {
                 QIcon buttonIcon(coverPath(music));
                 ui->btn_albumpic->setIcon(buttonIcon);
-                setCurrentCover(music);
+                //setCurrentCover(music);
             }
         }
         else
@@ -875,10 +954,6 @@ void MainWidget::appendMusicToPlayList(SongList musics, int row)
 
 }
 
-void MainWidget::setCurrentCover(const QPixmap &pixmap)
-{
-
-}
 
 void MainWidget::setCurrentLyric(QString lyric)
 {
@@ -913,12 +988,31 @@ void MainWidget::setlyricPageBackImagePath(QString imagePath)
 
 void MainWidget::addFavorite(SongList musics)
 {
-
+    foreach (Music music, musics)
+    {
+        if (favoriteSongs.contains(music))
+        {
+            qDebug() << "歌曲已存在：" << music.simpleString();
+            continue;
+        }
+        favoriteSongs.append(music);
+        qDebug() <<"添加收藏：" << music.simpleString();
+    }
+    saveSongList("music/favorite", favoriteSongs);
+    setPlayListTable(favoriteSongs, ui->tableWidget_favorite);
 }
 
 void MainWidget::removeFavorite(SongList musics)
 {
-
+    foreach (Music music, musics)
+    {
+        if (favoriteSongs.removeOne(music))
+        {
+            qDebug() << "取消收藏：" << music.simpleString();
+        }
+    }
+    saveSongList("music/favorite", favoriteSongs);
+    setPlayListTable(favoriteSongs, ui->tableWidget_favorite);
 }
 
 void MainWidget::onPlayNowTriggered() {
@@ -1034,6 +1128,29 @@ void MainWidget::on_tableWidget_search_itemDoubleClicked(QTableWidgetItem *item)
     startPlaySong(currentsong);
 }
 
+void MainWidget::on_tableWidget_favorite_customContextMenuRequested(const QPoint &pos)
+{
+    if (favoriteSongs.isEmpty()) {
+        return;
+    }
+    handleContextMenuRequest(ui->tableWidget_favorite, pos);
+}
+
+void MainWidget::on_tableWidget_favorite_itemDoubleClicked(QTableWidgetItem *item)
+{
+    int row = ui->tableWidget_favorite->row(item);
+    Music currentsong;
+    if (row > -1 )
+        currentsong = favoriteSongs.at(row);
+    if (orderSongs.contains(currentsong))
+    {
+        orderSongs.removeOne(currentsong);
+        //setPlayListTable(orderSongs, ui->MusicTable);
+    }
+    else
+        orderSongs.insert(0, currentsong);
+    startPlaySong(currentsong);
+}
 
 void MainWidget::on_btn_play_clicked()
 {
@@ -1072,4 +1189,88 @@ void MainWidget::on_btn_desklrc_clicked()
     }
 
 }
+
+void MainWidget::on_btn_volume_clicked()
+{
+    int volume = volumeSliderWnd->getSliderValue();
+    if (volume == 0)
+    {
+        volume  = settings.value("music/volume", 20).toInt();
+        if(volume == 0)
+            volume = 20;
+        ui->btn_volume->setIcon(QIcon(":/images/button/volume.png"));
+        volumeSliderWnd->setSliderValue(volume);
+        settings.setValue("music/mute", false);
+        settings.setValue("music/volume", volume);
+    }
+    else
+    {
+        settings.setValue("music/volume", volume);
+        volume = 0;
+        ui->btn_volume->setIcon(QIcon(":/images/button/volume_close.png"));
+        volumeSliderWnd->setSliderValue(0);
+        settings.setValue("music/mute", true);
+    }
+
+    player->setVolume(volume);
+
+}
+
+void MainWidget::showSliderWindow()
+{
+    QPoint pos = ui->btn_volume->mapToGlobal(QPoint(0, -volumeSliderWnd->height()));
+    volumeSliderWnd->move(pos.x() + ui->btn_volume->width() / 2 - volumeSliderWnd->width() / 2, pos.y());
+    volumeSliderWnd->show();
+}
+
+void MainWidget::hideSliderWindow()
+{
+    QRect volumeSliderRect = volumeSliderWnd->geometry();
+    QRect volumeButtonRect = ui->btn_volume->geometry();
+    QRect combinedRect = volumeSliderRect.united(volumeButtonRect);
+    if (!combinedRect.contains(QCursor::pos())) {
+        // 使用 QTimer 实现延迟隐藏
+        QTimer::singleShot(1000, this, [=]() {
+            volumeSliderWnd->hide();
+        });
+    }
+}
+
+void MainWidget::updateVolumeSliderValue(int value)
+{
+
+    if(value == 0){
+        ui->btn_volume->setIcon(QIcon(":/images/button/volume_close.png"));
+        settings.setValue("music/mute", true);
+    }else{
+        ui->btn_volume->setIcon(QIcon(":/images/button/volume.png"));
+        settings.setValue("music/mute", false);
+    }
+
+    settings.setValue("music/volume", value);
+    player->setVolume(value);
+
+}
+
+
+void MainWidget::on_btn_like_clicked()
+{
+
+}
+
+
+void MainWidget::on_btn_pre_clicked()
+{
+
+}
+
+
+void MainWidget::on_btn_next_clicked()
+{
+
+}
+
+
+
+
 

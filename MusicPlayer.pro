@@ -35,7 +35,8 @@ HEADERS += \
     myLyricWidget.h \
     mySlider.h \
     myTableWidget.h \
-    switchanimation.h
+    switchanimation.h \
+    volumeSlider.h
 
 FORMS += \
     mainwidget.ui
