@@ -4,8 +4,8 @@ DesktopLyricWidget::DesktopLyricWidget(QWidget *parent) : QWidget(parent),
     settings(QApplication::applicationDirPath()+"/musics.ini", QSettings::Format::IniFormat)
 {
     this->setWindowTitle("桌面歌词");
-    this->setMinimumSize(45, 15);
-    this->setMaximumSize(800, 100);
+    this->setMinimumSize(800, 80);
+    this->setMaximumSize(1200, 120);
     if ((jiWindow = settings.value("music/desktopLyricTrans", false).toBool()))
     {
         this->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
@@ -35,8 +35,8 @@ DesktopLyricWidget::DesktopLyricWidget(QWidget *parent) : QWidget(parent),
     fontHeight = fm.height();
     lineSpacing = fm.lineSpacing();
 
-    this->setMinimumHeight((fontHeight + boundaryWidth) * 2);
-    this->setMinimumWidth((fm.horizontalAdvance("一二三四五六七八九十十一十二")) * 2);
+    //this->setMinimumHeight((fontHeight + boundaryWidth) * 2);
+    //this->setMinimumWidth((fm.horizontalAdvance("一二三四五六七八九十十一十二")) * 2);
 
 }
 
@@ -327,7 +327,7 @@ void DesktopLyricWidget::showMenu()
             return ;
         if (c != bgColor)
         {
-            settings.setValue("lyric/bgColor", waitingColor = c);
+            settings.setValue("lyric/bgColor", bgColor = c);
             update();
         }
     });

@@ -100,10 +100,10 @@ private:
 
     // 绘制设定
     LineMode lineMode = DoubleLine; // 单行还是双行
-    AlignMode alignMode = AlignLeft; // 0左 1中 2右 3分散
-    QColor playingColor = QColor(0, 255, 255);
-    QColor waitingColor = QColor(255, 155, 155);
-    QColor bgColor = QColor(0xf0, 0xf0, 0xf0);
+    AlignMode alignMode = AlignWidth; // 0左 1中 2右 3分散
+    QColor playingColor = QColor(255, 155, 155);
+    QColor waitingColor = QColor(240, 255, 255);
+    QColor bgColor = QColor(170, 160, 154);
 
     // 歌词显示
     LyricStream lyricStream;

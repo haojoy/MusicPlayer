@@ -51,13 +51,15 @@ protected:
         // 获取当前时间和总时间
         int currentValue = value();
         int totalValue = maximum();
+        if(totalValue == 0)
+            return;
 
         // 格式化时间
         QString currentTime = formatTime(currentValue);
         QString totalTime = formatTime(totalValue);
 
         // 计算滑块位置
-        int handleX = (currentValue * (width() - 100)) / totalValue; // 50 是滑块的宽度
+        int handleX = (currentValue * (width() - 100)) / totalValue; // 100是滑块的宽度
 
         // 绘制滑块文本
         QRect handleRect(handleX, 0, 100, height());

@@ -732,6 +732,9 @@
                   <height>16777215</height>
                  </size>
                 </property>
+                <property name="contextMenuPolicy">
+                 <enum>Qt::CustomContextMenu</enum>
+                </property>
                 <property name="layoutDirection">
                  <enum>Qt::LeftToRight</enum>
                 </property>
@@ -834,6 +837,9 @@
                  <layout class="QVBoxLayout" name="verticalLayout_12">
                   <item>
                    <widget class="MyTableWidget" name="tableWidget_favorite">
+                    <property name="contextMenuPolicy">
+                     <enum>Qt::CustomContextMenu</enum>
+                    </property>
                     <property name="verticalScrollBarPolicy">
                      <enum>Qt::ScrollBarAlwaysOff</enum>
                     </property>
@@ -863,11 +869,17 @@
                  <layout class="QVBoxLayout" name="verticalLayout_7">
                   <item>
                    <widget class="MyTableWidget" name="tableWidget_recently">
+                    <property name="contextMenuPolicy">
+                     <enum>Qt::CustomContextMenu</enum>
+                    </property>
                     <property name="verticalScrollBarPolicy">
                      <enum>Qt::ScrollBarAlwaysOff</enum>
                     </property>
                     <property name="horizontalScrollBarPolicy">
                      <enum>Qt::ScrollBarAlwaysOff</enum>
+                    </property>
+                    <property name="editTriggers">
+                     <set>QAbstractItemView::NoEditTriggers</set>
                     </property>
                     <property name="defaultDropAction">
                      <enum>Qt::IgnoreAction</enum>
@@ -997,11 +1009,17 @@
                       <verstretch>0</verstretch>
                      </sizepolicy>
                     </property>
+                    <property name="contextMenuPolicy">
+                     <enum>Qt::CustomContextMenu</enum>
+                    </property>
                     <property name="verticalScrollBarPolicy">
                      <enum>Qt::ScrollBarAlwaysOff</enum>
                     </property>
                     <property name="horizontalScrollBarPolicy">
                      <enum>Qt::ScrollBarAlwaysOff</enum>
+                    </property>
+                    <property name="editTriggers">
+                     <set>QAbstractItemView::NoEditTriggers</set>
                     </property>
                     <property name="defaultDropAction">
                      <enum>Qt::IgnoreAction</enum>

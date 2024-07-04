@@ -106,11 +106,18 @@ private:
     void restorePlayList(QString key, PlayListList &playlistlist);
 
     void connectDesktopLyricSignals();
-    void handleContextMenuRequest(QTableWidget* table, const QPoint& pos);
+    void handleContextMenuRequest(const QPoint& pos, QTableWidget* table, SongList typemusics);
+    void handleTableDoubleClick(QTableWidgetItem *item, QTableWidget* table, SongList typemusics);
     QNetworkRequest getNetworkRequest(const QString &requrl);
 
     void setLyricScroll(int x);
     int getLyricScroll() const;
+
+    void setbtnlikeIcon();
+    void highlightCurrentTabButton(QPushButton *btn);
+
+    void addMusicToPlaylist(const Music &music);
+    Music getCurrentMusic() const;
 protected:
     //实现窗口可拖动
     void mousePressEvent(QMouseEvent *event) override;
@@ -169,9 +176,17 @@ private slots:
 
     void on_tableWidget_search_itemDoubleClicked(QTableWidgetItem *item);
 
-     void on_tableWidget_favorite_customContextMenuRequested(const QPoint &pos);
+    void on_tableWidget_favorite_customContextMenuRequested(const QPoint &pos);
 
-     void on_tableWidget_favorite_itemDoubleClicked(QTableWidgetItem *item);
+    void on_tableWidget_favorite_itemDoubleClicked(QTableWidgetItem *item);
+
+    void on_tableWidget_recently_customContextMenuRequested(const QPoint &pos);
+
+    void on_tableWidget_recently_itemDoubleClicked(QTableWidgetItem *item);
+
+    void on_tableWidget_local_customContextMenuRequested(const QPoint &pos);
+
+    void on_tableWidget_local_itemDoubleClicked(QTableWidgetItem *item);
 
     void on_btn_play_clicked();
 
@@ -202,6 +217,9 @@ private slots:
 
     void on_btn_next_clicked();
 
+    void on_btn_mode_clicked();
+
+    void onCurrentMediaChanged(const QMediaContent &content);
 private:
     Ui::MainWidget *ui;
 
@@ -224,12 +242,14 @@ private:
 
     QMediaPlayer *player;            // 播放器
     QMediaPlaylist *playlist;        // 播放列表
+    QMap<QString, Music> mediaToMusicMap; // 用于映射 QMediaContent 到 Music 对象
+
     SongList songSearchResult;
     Music downloadingSong;
     Music playAfterDownloaded;
     Music playingSong;
 
-    SongList orderSongs;             // 播放列表
+    SongList recentlySongs;             // 最近播放
     SongList favoriteSongs;          // 我的喜欢
     SongList localSongs;             // 本地歌曲
     SongList toDownLoadSongs;        // 即将下载

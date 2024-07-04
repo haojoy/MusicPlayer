@@ -28,6 +28,7 @@
         <file>images/AlbumImg/albumUnknown.png</file>
         <file>images/button/btn_playing.png</file>
         <file>images/button/btn_lrc_show.png</file>
+        <file>images/button/mode_loop.png</file>
     </qresource>
     <qresource prefix="/qss">
         <file>qss/style.qss</file>
