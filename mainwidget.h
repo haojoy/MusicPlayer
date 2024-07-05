@@ -59,7 +59,7 @@ private:
     QString lyricPath(const Music &music) const;
     QString coverPath(const Music &music) const;
     bool isSongDownloaded(Music music);
-
+    void setMusicsListTable(PlayListList playlist, QListWidget *list);
     void setPlayListTable(SongList songs, QTableWidget *table);
     // 搜索音乐
     void musicSearch(const QString &keystring);
@@ -83,7 +83,7 @@ private:
     void appendOrderSongs(SongList musics);
     //void removeOrderSongs(SongList musics);
     void appendNextSongs(SongList musics);
-    void appendMusicToPlayList(SongList musics, int row);
+    void addMusicToMusicList(SongList musics, int row);
     //void ClearPlayList();
     void setCurrentLyric(QString lyric);
 
@@ -114,7 +114,6 @@ private:
     int getLyricScroll() const;
 
     void setbtnlikeIcon();
-    void highlightCurrentTabButton(QPushButton *btn);
 
     void addMusicToPlaylist(const Music &music);
     Music getCurrentMusic() const;
@@ -188,6 +187,10 @@ private slots:
 
     void on_tableWidget_local_itemDoubleClicked(QTableWidgetItem *item);
 
+    void on_tableWidget_songlist_customContextMenuRequested(const QPoint &pos);
+
+    void on_tableWidget_songlist_itemDoubleClicked(QTableWidgetItem *item);
+
     void on_btn_play_clicked();
 
     void onPlayNowTriggered();
@@ -220,6 +223,17 @@ private slots:
     void on_btn_mode_clicked();
 
     void onCurrentMediaChanged(const QMediaContent &content);
+    void on_btn_createsonglist_clicked();
+
+    void playMusiclist(QList<QListWidgetItem *> items);
+    void on_listWidget_musiclist_customContextMenuRequested(const QPoint &pos);
+
+    void on_listWidget_musiclist_itemClicked(QListWidgetItem *item);
+
+    void on_listWidget_musiclist_itemDoubleClicked(QListWidgetItem *item);
+
+    void highlightCurrentTabButton(int index);
+
 private:
     Ui::MainWidget *ui;
 
@@ -229,7 +243,7 @@ private:
     QAction* addToPlayListAction;
     QAction* favoriteAction;
     QMenu* playListMenu;
-    SongList menuMusics;
+    SongList menuSelectedMusics;
     Music menuCurrentSong;
 
     int lyricScroll;
@@ -253,7 +267,8 @@ private:
     SongList favoriteSongs;          // 我的喜欢
     SongList localSongs;             // 本地歌曲
     SongList toDownLoadSongs;        // 即将下载
-    PlayListList songplaylist; // 歌单
+    SongList currentMusicList;     // 当前歌单的音乐列表
+    PlayListList MusicsList; // 歌单列表
 
     DesktopLyricWidget* desktopLyric;
     VolumeSlider *volumeSliderWnd;

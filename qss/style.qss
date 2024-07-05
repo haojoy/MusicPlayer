@@ -5,23 +5,6 @@
     border: none;
 }
 
-/*QLineEdit {
-    border: 1px solid white;
-    border-radius: 10px;
-    padding: 5px;
-}*/
-/*QLineEdit#edit_search
-{
-        background: transparent;
-        border-radius: 10px;
-        font-size: 14;
-        font-family: "微软雅黑";
-        color: rgba(211, 211, 211, 128);
-}*/
-QLineEdit[placeholderText] {
-    color: white; /* 设置 placeholderText 的颜色 */
-}
-
 QLabel#label_lrchead{
     color : white;
     font-size: 32px;
@@ -74,30 +57,36 @@ QLineEdit {
         padding: 0 8px;
         selection-background-color: rgb(187, 187, 187);
         selection-color: rgb(60, 63, 65);
+        min-width: 300px;
+        max-width: 500px;
+        min-height: 30px;
+        max-height: 36px;
+}
+
+QLineEdit[placeholderText] {
+    color: white; /* 设置 placeholderText 的颜色 */
 }
 
 QListWidget {
     background: transparent;
     border: none;
+    font-size:16px;
 }
 QListWidget::item {
     background: transparent;
-    color: black;
+    color: white;
 }
-QListWidget::item:selected {
-    background: rgba(255, 255, 255, 50);
-    color: black;
+QListWidget::item:hover {
+    background: rgba(255, 255, 255, 20);
 }
 
-/*QWidget#centralWidget{
-    background-color:rgba(97, 76, 64, 127);
-    background-image: url(:/images/background.jpg);
-}*/
+QListWidget::item:selected {
+    background: rgba(255, 255, 255, 60);
+}
 
 QTableWidget{
     background: transparent;
     border: none;
-    /*alternate-background-color: #d0d0d0;*/
 }
 QHeaderView::section {
     background-color: transparent;
@@ -147,36 +136,6 @@ QTabBar::tab {
     border: none;
 }
 
-
-QCheckBox {
-	color:rgb(223,219,210);
-	padding: 2px;
-}
-QCheckBox:hover {
-	border-radius:4px;
-	border-style:solid;
-	padding-left: 1px;
-	padding-right: 1px;
-	padding-bottom: 1px;
-	padding-top: 1px;
-	border-width:1px;
-	border-color: rgb(87, 97, 106);
-	background-color:qlineargradient(spread:pad, x1:0.5, y1:0.7, x2:0.5, y2:0.3, stop:0 rgba(87, 97, 106, 150), stop:1 rgba(93, 103, 113, 150));
-}
-QCheckBox::indicator:checked {
-	border-radius:4px;
-	border-style:solid;
-	border-width:1px;
-	border-color: rgb(180,180,180);
-  	background-color:qlineargradient(spread:pad, x1:0.5, y1:0.7, x2:0.5, y2:0.3, stop:0 rgba(87, 97, 106, 255), stop:1 rgba(93, 103, 113, 255));
-}
-QCheckBox::indicator:unchecked {
-	border-radius:4px;
-	border-style:solid;
-	border-width:1px;
-	border-color: rgb(87, 97, 106);
-  	background-color:rgb(255,255,255);
-}
 QStatusBar {
 	color:rgb(240,240,240);
 }
@@ -185,5 +144,12 @@ QMessageBox QLabel{
     color: black;
 }
 QMessageBox QPushButton{
+    color: black;
+}
+
+QInputDialog  QLabel{
+    color: black;
+}
+QInputDialog  QPushButton{
     color: black;
 }

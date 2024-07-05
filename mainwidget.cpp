@@ -75,9 +75,14 @@ MainWidget::MainWidget(QWidget *parent)
 
     setbtnlikeIcon();
 
+    ui->btn_songList->setIcon(QIcon(QPixmap(":/images/button/btn_unfold.png")));
+    ui->listWidget_musiclist->show();
+
     restoreSongList("music/order", recentlySongs);
     restoreSongList("music/local", localSongs);
     restoreSongList("music/favorite", favoriteSongs);
+    restorePlayList("playlist/list", MusicsList);
+    setMusicsListTable(MusicsList, ui->listWidget_musiclist);
 
     // 清空音乐播放列表
     playlist->clear();
@@ -107,9 +112,10 @@ void MainWidget::init_HandleUI(){
     ui->tableWidget_local->verticalHeader()->setStyleSheet("background-color:transparent");
     ui->tableWidget_recently->horizontalHeader()->setStyleSheet("background-color:transparent");
     ui->tableWidget_recently->verticalHeader()->setStyleSheet("background-color:transparent");
+    ui->tableWidget_songlist->horizontalHeader()->setStyleSheet("background-color:transparent");
+    ui->tableWidget_songlist->verticalHeader()->setStyleSheet("background-color:transparent");
 
     QString lineeditstyle = "QLineEdit {border: 1px solid lightgray; border-radius: 10px;padding-left: 10px;background-color: rgba(142,128,119,127)}";
-    ui->lineEdit_songlistname->setStyleSheet(lineeditstyle);
     ui->edit_search->setStyleSheet(lineeditstyle);
 
     ui->scrollArea->setStyleSheet("QScrollArea {background:transparent; border: none}");
@@ -238,6 +244,8 @@ void MainWidget::init_HandleSignalsAndSlots(){
         }
     });
     connect(playlist, &QMediaPlaylist::currentMediaChanged, this, &MainWidget::onCurrentMediaChanged);
+
+    connect(ui->tabWidget_switchcontent, &QTabWidget::currentChanged, this, &MainWidget::highlightCurrentTabButton);
 }
 
 MainWidget::~MainWidget()
@@ -299,6 +307,29 @@ void MainWidget::on_btn_albumpic_clicked()
     } else if (ui->tabWidget->currentWidget() == ui->tab_lrc) {
         showHomePage();
         ui->btn_albumpic->setToolTip(QString("展开音乐详情"));
+    }
+}
+
+void MainWidget::setMusicsListTable(PlayListList playlist, QListWidget *list)
+{
+    list->clear();
+
+    QFontMetrics fm(list->font()); // 使用列表的字体来计算文本宽度
+
+    for (int index = 0; index < playlist.size(); index++)
+    {
+        const QString &playlistName = playlist.at(index).name;
+
+        QListWidgetItem *item = new QListWidgetItem;
+        item->setIcon(QIcon(":/images/playlist.png"));
+        item->setText(playlistName);
+        list->addItem(item);
+
+        // 检查文字宽度是否超过列表项宽度
+        if (fm.horizontalAdvance(playlistName) > list->width())
+        {
+            item->setToolTip(playlistName);
+        }
     }
 }
 
@@ -374,28 +405,34 @@ void MainWidget::on_btn_favorite_clicked()
 {
     setPlayListTable(favoriteSongs, ui->tableWidget_favorite);
     ui->tabWidget_switchcontent->setCurrentWidget(ui->tab_favorite);
-    highlightCurrentTabButton(ui->btn_favorite);
+    highlightCurrentTabButton(1);
 }
 
 void MainWidget::on_btn_recently_clicked()
 {
     setPlayListTable(recentlySongs, ui->tableWidget_recently);
     ui->tabWidget_switchcontent->setCurrentWidget(ui->tab_recentlyPlayed);
-    highlightCurrentTabButton(ui->btn_recently);
+    highlightCurrentTabButton(2);
 }
 
 void MainWidget::on_btn_songList_clicked()
 {
-
-    ui->tabWidget_switchcontent->setCurrentWidget(ui->tab_defaultSongList);
-    highlightCurrentTabButton(ui->btn_songList);
+    if(ui->listWidget_musiclist->isHidden())
+    {
+        setMusicsListTable(MusicsList, ui->listWidget_musiclist);
+        ui->btn_songList->setIcon(QIcon(QPixmap(":/images/button/btn_unfold.png")));
+        ui->listWidget_musiclist->show();
+    }else{
+        ui->btn_songList->setIcon(QIcon(QPixmap(":/images/button/btn_fold.png")));
+        ui->listWidget_musiclist->hide();
+    }
 }
 
 void MainWidget::on_btn_localsong_clicked()
 {
     setPlayListTable(localSongs, ui->tableWidget_local);
     ui->tabWidget_switchcontent->setCurrentWidget(ui->tab_local);
-    highlightCurrentTabButton(ui->btn_localsong);
+    highlightCurrentTabButton(4);
 }
 
 void MainWidget::on_btn_minsize_clicked()
@@ -690,7 +727,7 @@ void MainWidget::playLocalSong(Music music)
     // 开始播放
     playingSong = music;
     if (recentlySongs.contains(music))
-        recentlySongs.removeOne(music);
+        recentlySongs.removeAll(music);
     recentlySongs.insert(0,music);
 
     QString songFilePath = songPath(music);
@@ -805,7 +842,7 @@ void MainWidget::setLableSongInfo(const Music &music) {
 void MainWidget::handleDownloadFailure(const Music &music) {
     if (playAfterDownloaded == music) {
         if (recentlySongs.contains(music)) {
-            recentlySongs.removeOne(music);
+            recentlySongs.removeAll(music);
             settings.setValue("music/currentSong", "");
             setLableSongInfo(music);
             player->stop();
@@ -1017,11 +1054,9 @@ void MainWidget::startPlaySong(Music music)
         downloadSong(music);
     }
     if (recentlySongs.contains(music))
-        recentlySongs.removeOne(music);
+        recentlySongs.removeAll(music);
     recentlySongs.insert(0,music);
     saveSongList("music/order", recentlySongs);
-    //setPlayListTable(recentlySongs, ui->MusicTable);
-
 }
 
 void MainWidget::appendOrderSongs(SongList musics)
@@ -1031,21 +1066,28 @@ void MainWidget::appendOrderSongs(SongList musics)
 
 void MainWidget::appendNextSongs(SongList musics)
 {
-    foreach (Music music, musics)
-    {
-        // 获取当前播放的位置
-        int currentIndex = playlist->currentIndex();
-        // 在当前位置的后面插入新的曲目
-        playlist->insertMedia(currentIndex + 1, QUrl::fromLocalFile(songPath(music)));
-        // 设置下一曲播放
-        playlist->setCurrentIndex(currentIndex + 1);
-    }
+    // foreach (Music music, musics)
+    // {
+    //     // 获取当前播放的位置
+    //     int currentIndex = playlist->currentIndex();
+    //     // 在当前位置的后面插入新的曲目
+    //     playlist->insertMedia(currentIndex + 1, QUrl::fromLocalFile(songPath(music)));
+    //     // 设置下一曲播放
+    //     playlist->setCurrentIndex(currentIndex + 1);
+    // }
 
 }
 
-void MainWidget::appendMusicToPlayList(SongList musics, int row)
+void MainWidget::addMusicToMusicList(SongList musics, int row)
 {
+    foreach (Music music, musics)
+    {
+        if (MusicsList.at(row).containsMusic.contains(music))
+            continue ;
+        MusicsList[row].containsMusic.append(music);
+    }
 
+    savePlayList("playlist/list", MusicsList);
 }
 
 
@@ -1115,20 +1157,20 @@ void MainWidget::onPlayNowTriggered() {
 }
 
 void MainWidget::onPlayNextTriggered() {
-    appendNextSongs(menuMusics);
+    appendNextSongs(menuSelectedMusics);
 }
 
 void MainWidget::onAddToPlayListTriggered() {
-    appendOrderSongs(menuMusics);
+    appendOrderSongs(menuSelectedMusics);
 }
 
 void MainWidget::onFavoriteTriggered() {
     if (!favoriteSongs.contains(menuCurrentSong))
-        addFavorite(menuMusics);
+        addFavorite(menuSelectedMusics);
     else
-        removeFavorite(menuMusics);
+        removeFavorite(menuSelectedMusics);
     setbtnlikeIcon();
-    menuMusics.clear();
+    menuSelectedMusics.clear();
 }
 
 void MainWidget::slotPlayerPositionChanged()
@@ -1169,34 +1211,36 @@ void MainWidget::on_btn_setskin_clicked()
 
 void MainWidget::on_btn_logo_clicked()
 {
-    QMessageBox::information(this, "关于", "name: MusicPlayer \n info: a qt project for learning \n author: haojoy");
+    QMessageBox::information(this, "关于", "name: MusicPlayer \ninfo: a qt project for learning \nauthor: haojoy");
 }
 
 //右键菜单请求
 void MainWidget::handleContextMenuRequest(const QPoint& pos, QTableWidget* table, SongList typemusics) {
     if(typemusics.isEmpty())
         return;
+    menuSelectedMusics.clear();
     auto items = table->selectedItems();
     foreach (auto item, items) {
         int row = table->row(item);
         int col = table->column(item);
         if (col == 0)
-            menuMusics.append(typemusics.at(row));
+            menuSelectedMusics.append(typemusics.at(row));
     }
 
     int row = table->currentRow();
     if (row > -1)
         menuCurrentSong = typemusics.at(row);
 
-    playListMenu->setEnabled(!songplaylist.isEmpty());
+    playListMenu->clear();
+    playListMenu->setEnabled(!MusicsList.isEmpty());
     favoriteAction->setText(favoriteSongs.contains(menuCurrentSong) ? "从我的喜欢中移除" : "添加到我的喜欢");
     // 添加歌单菜单项并连接信号
-    for (int index = 0; index < songplaylist.size(); ++index) {
-        QAction* playlistAction = new QAction(songplaylist.at(index).name, this);
+    for (int index = 0; index < MusicsList.size(); ++index) {
+        QAction* playlistAction = new QAction(MusicsList.at(index).name, this);
         playListMenu->addAction(playlistAction);
 
         connect(playlistAction, &QAction::triggered, this, [=]() {
-            appendMusicToPlayList(menuMusics, index);
+            addMusicToMusicList(menuSelectedMusics, index);
         });
     }
     contextMenu->exec(table->viewport()->mapToGlobal(pos));
@@ -1210,7 +1254,7 @@ void MainWidget::handleTableDoubleClick(QTableWidgetItem *item, QTableWidget *ta
         currentsong = typemusics.at(row);
 
     if (recentlySongs.contains(currentsong))
-        recentlySongs.removeOne(currentsong);
+        recentlySongs.removeAll(currentsong);
     recentlySongs.insert(0, currentsong);
     startPlaySong(currentsong);
 }
@@ -1260,6 +1304,17 @@ void MainWidget::on_tableWidget_local_customContextMenuRequested(const QPoint &p
 void MainWidget::on_tableWidget_local_itemDoubleClicked(QTableWidgetItem *item)
 {
      handleTableDoubleClick(item, ui->tableWidget_local, localSongs);
+}
+
+void MainWidget::on_tableWidget_songlist_customContextMenuRequested(const QPoint &pos)
+{
+    handleContextMenuRequest(pos, ui->tableWidget_songlist, currentMusicList);
+}
+
+
+void MainWidget::on_tableWidget_songlist_itemDoubleClicked(QTableWidgetItem *item)
+{
+    handleTableDoubleClick(item, ui->tableWidget_songlist, currentMusicList);
 }
 
 void MainWidget::on_btn_play_clicked()
@@ -1475,7 +1530,7 @@ void MainWidget::onCurrentMediaChanged(const QMediaContent &content)
     }
 }
 
-void MainWidget::highlightCurrentTabButton(QPushButton *btn)
+void MainWidget::highlightCurrentTabButton(int index)
 {
     QString stylenormal = R"(
         QPushButton{
@@ -1491,9 +1546,9 @@ void MainWidget::highlightCurrentTabButton(QPushButton *btn)
     // 重置所有按钮的样式
     ui->btn_favorite->setStyleSheet(stylenormal);
     ui->btn_recently->setStyleSheet(stylenormal);
-    ui->btn_songList->setStyleSheet(stylenormal);
     ui->btn_localsong->setStyleSheet(stylenormal);
 
+    // 根据当前索引设置按钮的高亮样式
     QString stylehighlight = R"(
         QPushButton{
             background: transparent;
@@ -1503,8 +1558,20 @@ void MainWidget::highlightCurrentTabButton(QPushButton *btn)
             background-color: rgba(142,128,119,255);
         }
     )";
-
-    btn->setStyleSheet(stylehighlight);
+    // index为个tab页在UI中的index
+    switch(index) {
+    case 1:
+        ui->btn_favorite->setStyleSheet(stylehighlight);
+        break;
+    case 2:
+        ui->btn_recently->setStyleSheet(stylehighlight);
+        break;
+    case 4:
+       ui->btn_localsong->setStyleSheet(stylehighlight);
+        break;
+    default:
+        break;
+    }
 }
 
 void MainWidget::addMusicToPlaylist(const Music &music) {
@@ -1529,5 +1596,170 @@ Music MainWidget::getCurrentMusic() const {
         return Music();
     }
 }
+
+
+
+void MainWidget::on_btn_createsonglist_clicked()
+{
+    bool ok;
+    QString text =QInputDialog::getText(this, "新建歌单", "输入新歌单名字", QLineEdit::Normal, "", &ok);
+
+    if (ok && !text.isEmpty())
+    {
+        for (int i = 0; i < MusicsList.size(); i++)
+        {
+            if (MusicsList.at(i).name == text)
+            {
+                QMessageBox::warning(this, "警告:歌单已存在", "歌单已存在");
+                return ;
+            }
+        }
+        PlayList templist;
+        templist.name = text;
+        MusicsList.push_back(templist);
+    }
+
+    savePlayList("playlist/list", MusicsList);
+    setMusicsListTable(MusicsList, ui->listWidget_musiclist);
+}
+
+void MainWidget::playMusiclist(QList<QListWidgetItem *> items)
+{
+    player->stop();
+    playlist->clear();
+    // 选择歌单开始播放
+    SongList tempmusiclist;
+    Music tempMusic;
+    foreach (auto item, items)
+    {
+        // 选中的歌单
+        int row1 = ui->listWidget_musiclist->row(item);
+        tempmusiclist = MusicsList.at(row1).containsMusic;
+
+        for (int i = 0; i < tempmusiclist.size(); ++i) {
+            tempMusic = tempmusiclist[i];
+            if(recentlySongs.contains(tempMusic)){
+                recentlySongs.removeAll(tempMusic);
+            }
+            recentlySongs.insert(i, tempMusic);
+            addMusicToPlaylist(tempMusic);
+        }
+    }
+    playlist->setCurrentIndex(0);
+    player->play();
+    saveSongList("music/order", recentlySongs);
+    setPlayListTable(recentlySongs, ui->tableWidget_recently);
+}
+
+void MainWidget::on_listWidget_musiclist_customContextMenuRequested(const QPoint &pos)
+{
+    auto items = ui->listWidget_musiclist->selectedItems();
+    int row = ui->listWidget_musiclist->currentRow();
+    PlayList currentplaylist;
+    if (row < -1)
+        currentplaylist= MusicsList.at(row);
+
+    QMenu *menu = new QMenu(this);
+
+    QAction *playNow = new QAction("播放歌单", this);
+    QAction *rename = new QAction("重命名", this);
+    QAction *deletePlayList = new QAction("删除歌单", this);
+
+    menu->addAction(playNow);
+    menu->addAction(rename);
+    menu->addAction(deletePlayList);
+
+    connect(playNow, &QAction::triggered, [=]{
+        playMusiclist(items);
+    });
+
+    connect(rename, &QAction::triggered, [=]{
+        bool ok;
+        QString text = QInputDialog::getText(this, "重命名歌单", "请输入歌单新名字", QLineEdit::Normal, "", &ok);
+        if (ok && !text.isEmpty())
+        {
+            for (int i = 0; i < MusicsList.size(); i++)
+            {
+                if (MusicsList.at(i).name == text)
+                {
+                    QMessageBox::warning(this, "警告:歌单名已存在", "请重新取名");
+                    return ;
+                }
+            }
+            MusicsList[row].name = text;
+        }
+
+        savePlayList("playlist/list", MusicsList);
+        setMusicsListTable(MusicsList, ui->listWidget_musiclist);
+    });
+
+    connect(deletePlayList, &QAction::triggered, [=]{
+        if (!items.isEmpty()) {
+            QListWidgetItem *item = items.first();
+            int rowToRemove = ui->listWidget_musiclist->row(item);
+            ui->listWidget_musiclist->takeItem(rowToRemove);
+            MusicsList.removeAt(rowToRemove);
+
+            // 保存歌单列表和更新显示
+            savePlayList("playlist/list", MusicsList);
+            setMusicsListTable(MusicsList, ui->listWidget_musiclist);
+
+            //player->stop();
+            playlist->clear();
+
+            // 删除后自动选中下一个歌单
+            int nextRow = qMin(rowToRemove, MusicsList.size() - 1); // 下一个歌单的索引
+            if (nextRow >= 0) {
+                ui->listWidget_musiclist->setCurrentRow(nextRow); // 选中下一个歌单项
+                QListWidgetItem *item1 = ui->listWidget_musiclist->currentItem();
+                setPlayListTable(MusicsList.at(nextRow).containsMusic, ui->tableWidget_songlist);
+                ui->tabWidget_switchcontent->setCurrentWidget(ui->tab_defaultSongList);
+                if(player->state() == QMediaPlayer::PlayingState){
+                    QList<QListWidgetItem *> items;
+                    items.append(item1);
+                    playMusiclist(items);
+                }
+            }else{
+                QList<Music> temp;
+                setPlayListTable(temp, ui->tableWidget_songlist);
+                ui->tabWidget_switchcontent->setCurrentWidget(ui->tab_defaultSongList);
+            }
+
+        }
+    });
+
+    // 显示菜单
+    menu->exec(cursor().pos());
+    delete menu;
+}
+
+
+void MainWidget::on_listWidget_musiclist_itemClicked(QListWidgetItem *item)
+{
+    currentMusicList.clear();
+    int index = ui->listWidget_musiclist->row(item);
+    currentMusicList = MusicsList.at(index).containsMusic;
+    setPlayListTable(currentMusicList, ui->tableWidget_songlist);
+    ui->tabWidget_switchcontent->setCurrentWidget(ui->tab_defaultSongList);
+}
+
+
+void MainWidget::on_listWidget_musiclist_itemDoubleClicked(QListWidgetItem *item)
+{
+    currentMusicList.clear();
+    QList<QListWidgetItem *> items;
+    items.append(item);
+    int index = ui->listWidget_musiclist->row(item);
+    currentMusicList = MusicsList.at(index).containsMusic;
+    setPlayListTable(currentMusicList, ui->tableWidget_songlist);
+
+    ui->tabWidget_switchcontent->setCurrentWidget(ui->tab_defaultSongList);
+    playMusiclist(items);
+}
+
+
+
+
+
 
 
