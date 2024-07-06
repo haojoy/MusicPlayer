@@ -15,6 +15,7 @@
 #include <QDir>
 #include <QTableWidgetItem>
 #include <QMenu>
+#include "changebackground.h"
 #include "music.h"
 #include "switchanimation.h"
 #include "desktopLyricWidget.h"
@@ -234,9 +235,15 @@ private slots:
 
     void highlightCurrentTabButton(int index);
 
+    void updateChangeBackgroundPosition();
+
+    void onBackgroundChanged(const QColor &color, const QString &imagePath);
+
 private:
     Ui::MainWidget *ui;
 
+    /*换肤的界面*/
+    ChangeBackground * changeBackground = nullptr;
     QMenu* contextMenu;
     QAction* playNowAction;
     QAction* playNextAction;
@@ -278,5 +285,7 @@ private:
     QString paintingImagePath;
     QString homePageImagePath;
     QString lyricPageImagePath;
+
+    QColor paintingColor;
 };
 #endif // MAINWIDGET_H

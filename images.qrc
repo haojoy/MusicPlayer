@@ -33,6 +33,17 @@
         <file>images/button/btn_fold.png</file>
         <file>images/button/btn_unfold.png</file>
         <file>images/playlist.png</file>
+        <file>images/button/btn_chooseimage.png</file>
+        <file>images/backimages/back_image2.jpg</file>
+        <file>images/backimages/back_image3.jpg</file>
+        <file>images/backimages/back_image4.jpg</file>
+        <file>images/backimages/back_image5.jpg</file>
+        <file>images/backimages/back_image6.jpg</file>
+        <file>images/backimages/back_image2_min.jpg</file>
+        <file>images/backimages/back_image3_min.jpg</file>
+        <file>images/backimages/back_image4_min.jpg</file>
+        <file>images/backimages/back_image5_min.jpg</file>
+        <file>images/backimages/back_image6_min.jpg</file>
     </qresource>
     <qresource prefix="/qss">
         <file>qss/style.qss</file>

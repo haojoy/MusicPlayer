@@ -21,6 +21,7 @@ QMAKE_TARGET_DESCRIPTION = QT MusicPlayer
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    changebackground.cpp \
     desktopLyricWidget.cpp \
     main.cpp \
     mainwidget.cpp \
@@ -29,6 +30,7 @@ SOURCES += \
     switchanimation.cpp
 
 HEADERS += \
+    changebackground.h \
     desktopLyricWidget.h \
     mainwidget.h \
     music.h \
@@ -39,6 +41,7 @@ HEADERS += \
     volumeSlider.h
 
 FORMS += \
+    changebackground.ui \
     mainwidget.ui
 
 TRANSLATIONS += \

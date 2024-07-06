@@ -7,6 +7,7 @@
 MainWidget::MainWidget(QWidget *parent)
     : SwitchAnimation(parent)
     , ui(new Ui::MainWidget),
+    changeBackground(new ChangeBackground(this)),
     settings(QApplication::applicationDirPath() + "/musics.ini", QSettings::Format::IniFormat),
     musicFileDir(QApplication::applicationDirPath() + "/musics"),
     downloadedMusicFileDir(QApplication::applicationDirPath() + "/downloaded"),
@@ -16,10 +17,11 @@ MainWidget::MainWidget(QWidget *parent)
     defaultImagePath(":/images/background.jpg"),
     paintingImagePath(defaultImagePath),
     homePageImagePath(defaultImagePath),
-    lyricPageImagePath(defaultImagePath)
+    lyricPageImagePath(defaultImagePath),
+    paintingColor(QColor(97, 76, 64, 127))
 {
     ui->setupUi(this);
-
+    changeBackground->hide();
     playlist->setPlaybackMode(QMediaPlaylist::Loop); //循环模式
     ui->btn_mode->setToolTip("循环播放");
     ui->btn_mode->setIcon(QIcon(":/images/button/mode_loop.png"));
@@ -72,6 +74,7 @@ MainWidget::MainWidget(QWidget *parent)
 
 
     ui->btn_volume->installEventFilter(this);
+    this->installEventFilter(this);
 
     setbtnlikeIcon();
 
@@ -141,7 +144,7 @@ void MainWidget::paintEvent(QPaintEvent *event)
     painter.drawPixmap(rectajust, pixmap);
 
     // 设置背景颜色透明度
-    painter.fillRect(rectajust, QColor(97, 76, 64, 127)); // 白色，透明度为 100
+    painter.fillRect(rectajust, paintingColor);
 
     QWidget::paintEvent(event);
 }
@@ -246,6 +249,9 @@ void MainWidget::init_HandleSignalsAndSlots(){
     connect(playlist, &QMediaPlaylist::currentMediaChanged, this, &MainWidget::onCurrentMediaChanged);
 
     connect(ui->tabWidget_switchcontent, &QTabWidget::currentChanged, this, &MainWidget::highlightCurrentTabButton);
+
+    // 背景选择
+    connect(changeBackground, &ChangeBackground::backgroundChanged, this, &MainWidget::onBackgroundChanged);
 }
 
 MainWidget::~MainWidget()
@@ -289,6 +295,23 @@ bool MainWidget::eventFilter(QObject *watched, QEvent *event)
         } else if (event->type() == QEvent::Leave) {
             hideSliderWindow();
             return true;
+        }
+    }
+
+    if (watched == this && event->type() == QEvent::Resize)
+    {
+        if (changeBackground && !changeBackground->isHidden())
+        {
+            updateChangeBackgroundPosition();
+        }
+    }
+
+    if (event->type() == QEvent::MouseButtonPress) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
+        if (changeBackground->isVisible() && !changeBackground->geometry().contains(mouseEvent->pos())) {
+            if (rect().contains(mouseEvent->pos())) {
+                changeBackground->hide();
+            }
         }
     }
     return QWidget::eventFilter(watched, event);
@@ -484,6 +507,7 @@ void MainWidget::on_btn_search_clicked()
     QString songname = ui->edit_search->text();
     if (songname.trimmed().isEmpty()) {
         QMessageBox::information(this, "提示", "请输入想要搜索的歌曲");
+        setPlayListTable(songSearchResult,ui->tableWidget_search);
     } else {
         musicSearch(songname);
     }
@@ -1205,7 +1229,15 @@ int MainWidget::getLyricScroll() const
 
 void MainWidget::on_btn_setskin_clicked()
 {
-    qDebug() << "todo";
+    updateChangeBackgroundPosition();
+    if(changeBackground->isHidden())
+    {
+        changeBackground->show();
+    }
+    else {
+        changeBackground->hide();
+    }
+
 }
 
 
@@ -1757,9 +1789,27 @@ void MainWidget::on_listWidget_musiclist_itemDoubleClicked(QListWidgetItem *item
     playMusiclist(items);
 }
 
+void MainWidget::updateChangeBackgroundPosition()
+{
+    // 获取按钮在父窗口中的位置
+    QPoint btnPos = ui->btn_setskin->mapToParent(QPoint(0, 0));
+    QSize btnSize = ui->btn_setskin->size();
 
+    // 计算 changeBackground 窗口的显示位置
+    int offsetX = btnPos.x() + btnSize.width() - changeBackground->width() / 2;
+    int offsetY = btnPos.y() + btnSize.height() + 30;
 
+    changeBackground->setGeometry(offsetX, offsetY, changeBackground->width(), changeBackground->height());
+    changeBackground->raise();
+}
 
-
-
-
+void MainWidget::onBackgroundChanged(const QColor &color, const QString &imagePath)
+{
+    if (color.isValid()) {
+        paintingColor = color;
+    }
+    if (!imagePath.isEmpty()) {
+        paintingImagePath = imagePath;
+    }
+    update();  // 触发重绘
+}

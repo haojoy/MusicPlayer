@@ -10,6 +10,9 @@
     <height>823</height>
    </rect>
   </property>
+  <property name="mouseTracking">
+   <bool>true</bool>
+  </property>
   <property name="windowTitle">
    <string>MusicPlayer</string>
   </property>
@@ -56,6 +59,9 @@
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
+      </property>
+      <property name="mouseTracking">
+       <bool>true</bool>
       </property>
       <attribute name="title">
        <string>主页</string>
