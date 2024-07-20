@@ -20,6 +20,9 @@ QMAKE_TARGET_DESCRIPTION = QT MusicPlayer
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+INCLUDEPATH += $$PWD/3rdparty/taglib/include
+LIBS += -L$$PWD/3rdparty/taglib/lib -ltag
+
 SOURCES += \
     changebackground.cpp \
     desktopLyricWidget.cpp \
@@ -27,7 +30,8 @@ SOURCES += \
     mainwidget.cpp \
     myLyricWidget.cpp \
     myTableWidget.cpp \
-    switchanimation.cpp
+    switchanimation.cpp \
+    taglibHelper.cpp
 
 HEADERS += \
     changebackground.h \
@@ -38,6 +42,7 @@ HEADERS += \
     mySlider.h \
     myTableWidget.h \
     switchanimation.h \
+    taglibHelper.h \
     volumeSlider.h
 
 FORMS += \
