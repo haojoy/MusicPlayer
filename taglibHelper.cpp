@@ -12,18 +12,18 @@ TaglibHelper::~TaglibHelper()
 
 Music TaglibHelper::GetMusicTagInfo(const QString& filepath) {
     Music music;
-    FileRef file(filepath.toStdString().c_str());
+    FileRef file(filepath.toStdWString().c_str());
     Tag *tag = file.tag();
     AudioProperties *properties = file.audioProperties();
 
     if (tag != nullptr) {
         music.name = QString::fromStdString(tag->title().to8Bit(true));
-        music.artistNames = QString::fromStdString(tag->artist().to8Bit(true));
+        music.artists.push_back({0, QString::fromStdString(tag->artist().to8Bit(true)), ""});
         music.album.name = QString::fromStdString(tag->album().to8Bit(true));
     }
 
     if (properties != nullptr) {
-        music.duration = properties->lengthInSeconds();
+        music.duration = properties->lengthInMilliseconds();
     }
 
     return music;

@@ -239,6 +239,8 @@ private slots:
 
     void onBackgroundChanged(const QColor &color, const QString &imagePath);
 
+    void on_btn_selectlocal_clicked();
+
 private:
     Ui::MainWidget *ui;
 

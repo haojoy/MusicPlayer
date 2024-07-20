@@ -39,6 +39,9 @@ struct Artist
         json.insert("faceUrl", faceUrl);
         return json;
     }
+    bool operator==(const Artist &other) const {
+        return name == other.name;
+    }
 };
 
 struct Album
@@ -64,6 +67,9 @@ struct Album
         json.insert("name", name);
         json.insert("size", size);
         return json;
+    }
+    bool operator==(const Album &other) const {
+        return name == other.name;
     }
 };
 
@@ -112,12 +118,14 @@ struct Music
 
     bool isValid() const
     {
-        return id != 0;
+        // return id != 0;
+        return !name.isEmpty() && duration != 0;
     }
 
-    bool operator==(const Music& music) const
+    bool operator==(const Music &other) const
     {
-        return this->id == music.id;
+        return id == other.id && name == other.name && artists == other.artists &&
+            album.name == other.album.name  && duration == other.duration;
     }
 
     QString simpleString() const

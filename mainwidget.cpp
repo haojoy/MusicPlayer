@@ -1,8 +1,10 @@
 #include <QScopedPointer>
 #include <QScrollBar>
 #include <QRandomGenerator>
+#include <QFileDialog>
 #include "mainwidget.h"
 #include "ui_mainwidget.h"
+#include "taglibHelper.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : SwitchAnimation(parent)
@@ -630,8 +632,16 @@ void MainWidget::savePlayList(QString key, const PlayListList &playlistlist)
 void MainWidget::restoreSongList(QString key, SongList &songs)
 {
     QJsonArray array = settings.value(key).toJsonArray();
-    foreach(QJsonValue val, array)
-        songs.append(Music::fromJson(val.toObject()));
+    foreach(QJsonValue val, array){
+        Music music = Music::fromJson(val.toObject());
+        // QString songFilePath = songPath(music);
+        // if (!QFile::exists(songFilePath)) {
+        //     settings.remove(key);
+        // }else{
+        //     songs.append(music);
+        // }
+        songs.append(music);
+    }
 }
 
 void MainWidget::restorePlayList(QString key, PlayListList &playlistlist)
@@ -682,15 +692,30 @@ void MainWidget::connectDesktopLyricSignals()
 
 QString MainWidget::songPath(const Music &music) const
 {
-    return musicFileDir.absoluteFilePath(snum(music.id) + ".mp3");
+    if(music.id != 0){
+        return musicFileDir.absoluteFilePath(snum(music.id) + ".mp3");
+    }else{
+        return musicFileDir.absoluteFilePath(music.name + ".mp3");
+    }
+
 }
 QString MainWidget::lyricPath(const Music &music) const
 {
-    return musicFileDir.absoluteFilePath(snum(music.id) + ".lrc");
+    if(music.id != 0){
+        return musicFileDir.absoluteFilePath(snum(music.id) + ".lrc");
+    }else{
+        return musicFileDir.absoluteFilePath(music.name + ".lrc");
+    }
+
 }
 QString MainWidget::coverPath(const Music &music) const
 {
-    return musicFileDir.absoluteFilePath(snum(music.id) + ".jpg");
+    if(music.id != 0){
+        return musicFileDir.absoluteFilePath(snum(music.id) + ".jpg");
+    }else{
+        return musicFileDir.absoluteFilePath(music.name + ".jpg");
+    }
+
 }
 
 bool MainWidget::isSongDownloaded(Music music)
@@ -702,7 +727,7 @@ void MainWidget::playLocalSong(Music music)
 {
     qDebug() << "开始播放" << music.simpleString();
     //mySystemTray->setToolTip(music.simpleString());
-    if (!isSongDownloaded(music))
+    if (music.id != 0 && !isSongDownloaded(music) )
     {
         qDebug() << "error:未下载歌曲：" << music.simpleString() << "开始下载";
         playAfterDownloaded = music;
@@ -938,7 +963,7 @@ void MainWidget::downloadSong(Music music)
 
 void MainWidget::downloadSongLyric(Music music)
 {
-    if (QFileInfo(lyricPath(music)).exists())
+    if (music.id == 0 || QFileInfo(lyricPath(music)).exists())
         return ;
 
     downloadingSong = music;
@@ -992,7 +1017,7 @@ void MainWidget::downloadSongLyric(Music music)
 
 void MainWidget::downloadSongCover(Music music)
 {
-    if (QFileInfo(coverPath(music)).exists())
+    if (music.id == 0 || QFileInfo(coverPath(music)).exists())
         return ;
     downloadingSong = music;
     QString url = API_DOMAIN + "/song/detail?ids=" + snum(music.id);
@@ -1067,8 +1092,8 @@ void MainWidget::downloadSongCover(Music music)
 
 void MainWidget::startPlaySong(Music music)
 {
-
-    if (isSongDownloaded(music))
+    // 暂时用music id 0表示本地上传的歌曲
+    if (isSongDownloaded(music) || music.id == 0)
     {
         playLocalSong(music);
     }
@@ -1356,6 +1381,7 @@ void MainWidget::on_btn_play_clicked()
     if (player->state() == QMediaPlayer::PlayingState)
     {
         player->pause();
+        ui->btn_play->setToolTip(QString("播放"));
     }
     else
     {
@@ -1372,6 +1398,7 @@ void MainWidget::on_btn_play_clicked()
             return ;
         }
         player->play();
+        ui->btn_play->setToolTip(QString("暂停"));
     }
 }
 
@@ -1813,3 +1840,33 @@ void MainWidget::onBackgroundChanged(const QColor &color, const QString &imagePa
     }
     update();  // 触发重绘
 }
+
+void MainWidget::on_btn_selectlocal_clicked()
+{
+    QString curPath=QCoreApplication::applicationDirPath();;
+    QString dlgTitle="选择音频文件"; //对话框标题
+    QString filter="音频文件(*.mp3 *.wav *.wma);;mp3文件(*.mp3);;wav文件(*.wav);;wma文件(*.wma);;所有文件(*.*)"; //文件过滤器
+    QStringList fileList=QFileDialog::getOpenFileNames(this,dlgTitle,curPath,filter);
+
+    if (fileList.count()<1)
+        return;
+
+    for (int i=0; i<fileList.count();i++)
+    {
+        QString songpath=fileList.at(i);
+        Music localMusic = TaglibHelper::GetMusicTagInfo(songpath);
+
+        QFileInfo fileInfo(songpath);
+        localMusic.name = fileInfo.baseName();
+        if (!localSongs.contains(localMusic))
+        {
+            localSongs.append(localMusic);
+        }
+        QString coverpath = coverPath(localMusic);
+        QString lyricpath = lyricPath(localMusic);
+        TaglibHelper::GetAlbumCoverAndLyrics(songpath,coverpath,lyricpath);
+    }
+    saveSongList("music/local", localSongs);
+    setPlayListTable(localSongs, ui->tableWidget_local);
+}
+
