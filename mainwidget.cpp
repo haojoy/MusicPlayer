@@ -23,6 +23,7 @@ MainWidget::MainWidget(QWidget *parent)
     paintingColor(QColor(97, 76, 64, 127))
 {
     ui->setupUi(this);
+    setAcceptDrops(true);
     changeBackground->hide();
     playlist->setPlaybackMode(QMediaPlaylist::Loop); //循环模式
     ui->btn_mode->setToolTip("循环播放");
@@ -317,6 +318,35 @@ bool MainWidget::eventFilter(QObject *watched, QEvent *event)
         }
     }
     return QWidget::eventFilter(watched, event);
+}
+
+void MainWidget::dragEnterEvent(QDragEnterEvent *event)
+{
+    if(ui->tabWidget_switchcontent->currentWidget() ==  ui->tab_local){
+        if (event->mimeData()->hasUrls()) {
+            event->acceptProposedAction();
+        }
+    }
+}
+
+void MainWidget::dropEvent(QDropEvent *event)
+{
+    if(ui->tabWidget_switchcontent->currentWidget() ==  ui->tab_local){
+        foreach (const QUrl &url, event->mimeData()->urls()) {
+
+            QString songpath=url.toLocalFile();
+            Music localMusic = TaglibHelper::GetMusicTagInfo(songpath);
+
+            QFileInfo fileInfo(songpath);
+            localMusic.name = fileInfo.fileName();
+            if (!localSongs.contains(localMusic))
+            {
+                localSongs.append(localMusic);
+            }
+        }
+        saveSongList("music/local", localSongs);
+        setPlayListTable(localSongs, ui->tableWidget_local);
+    }
 }
 
 void MainWidget::on_btn_down_clicked()
@@ -695,7 +725,7 @@ QString MainWidget::songPath(const Music &music) const
     if(music.id != 0){
         return musicFileDir.absoluteFilePath(snum(music.id) + ".mp3");
     }else{
-        return musicFileDir.absoluteFilePath(music.name + ".mp3");
+        return musicFileDir.absoluteFilePath(music.name);
     }
 
 }
@@ -1857,14 +1887,14 @@ void MainWidget::on_btn_selectlocal_clicked()
         Music localMusic = TaglibHelper::GetMusicTagInfo(songpath);
 
         QFileInfo fileInfo(songpath);
-        localMusic.name = fileInfo.baseName();
+        localMusic.name = fileInfo.fileName();
         if (!localSongs.contains(localMusic))
         {
             localSongs.append(localMusic);
         }
-        QString coverpath = coverPath(localMusic);
-        QString lyricpath = lyricPath(localMusic);
-        TaglibHelper::GetAlbumCoverAndLyrics(songpath,coverpath,lyricpath);
+        // QString coverpath = coverPath(localMusic);
+        // QString lyricpath = lyricPath(localMusic);
+        // TaglibHelper::GetAlbumCoverAndLyrics(songpath,coverpath,lyricpath);
     }
     saveSongList("music/local", localSongs);
     setPlayListTable(localSongs, ui->tableWidget_local);

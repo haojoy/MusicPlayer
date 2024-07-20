@@ -15,6 +15,9 @@
 #include <QDir>
 #include <QTableWidgetItem>
 #include <QMenu>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
 #include "changebackground.h"
 #include "music.h"
 #include "switchanimation.h"
@@ -125,6 +128,10 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
 
     bool eventFilter(QObject *watched, QEvent *event) override;
+
+    //拖拽本地音乐文件
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 public:
     MainWidget(QWidget *parent = nullptr);
     ~MainWidget();
